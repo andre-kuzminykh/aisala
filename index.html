@@ -287,17 +287,24 @@
 
         // --- ГЛАВНОЕ ПРИЛОЖЕНИЕ ---
 
-        const SlideWrapper = ({ children }) => (
-            <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -40 }}
-                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                className="h-full w-full flex items-center justify-center p-6 md:p-20 overflow-y-auto hide-scrollbar"
-            >
-                {children}
-            </motion.div>
-        );
+        const SlideWrapper = ({ children, slideIndex }) => {
+            // Центрируем 0 (Hero) и 5 (Final) слайды на мобильных, остальные - по верху
+            const centerOnMobile = slideIndex === 0 || slideIndex === 5;
+            
+            return (
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -40 }}
+                    transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                    className={`h-full w-full flex justify-center px-6 md:p-20 overflow-y-auto hide-scrollbar 
+                        ${centerOnMobile ? 'items-center' : 'items-start pt-24 pb-12'} 
+                        md:items-center`}
+                >
+                    {children}
+                </motion.div>
+            );
+        };
 
         const App = () => {
             const [currentSlide, setCurrentSlide] = useState(0);
@@ -395,7 +402,7 @@
                     {/* Content Container */}
                     <main className="relative h-full w-full">
                         <AnimatePresence mode="wait">
-                            <SlideWrapper key={currentSlide}>
+                            <SlideWrapper key={currentSlide} slideIndex={currentSlide}>
                                 {renderSlide(currentSlide)}
                             </SlideWrapper>
                         </AnimatePresence>
