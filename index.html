@@ -104,7 +104,7 @@
                         <div className="absolute -inset-4 bg-[#6FEAD1]/10 rounded-[40px] blur-2xl group-hover:bg-[#6FEAD1]/20 transition-all duration-700" />
                         <div className="relative w-full h-full bg-slate-200 rounded-[32px] overflow-hidden border border-white shadow-2xl">
                             <img 
-                                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800" 
+                                src="https://i.ibb.co/k21mVDFX/image.png" 
                                 alt="AISALA Director" 
                                 className="w-full h-full object-cover grayscale brightness-110"
                             />
@@ -123,27 +123,54 @@
                     <p className="text-slate-400 text-lg md:text-xl tracking-wide uppercase">Лучшие AI-эксперты для ваших задач</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                    <div className="p-8 md:p-10 bg-white rounded-[32px] border border-slate-100 shadow-sm hover:border-[#6FEAD1]/50 transition-all space-y-6 group">
-                        <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-[#6FEAD1] group-hover:scale-110 transition-transform">
-                            <Icon name="target" size={32} />
+                    {/* КАРТОЧКА 1: EXECUTIVES */}
+                    <div className="p-6 md:p-8 bg-white rounded-[32px] border border-slate-100 shadow-sm hover:border-[#6FEAD1]/50 transition-all space-y-6 group">
+                        <div className="w-full h-64 rounded-2xl overflow-hidden relative">
+                            {/* ОБНОВЛЕНО ПОЗИЦИОНИРОВАНИЕ ФОТО */}
+                            <img 
+                                src="https://i.ibb.co/0RhcfsYF/Chat-GPT-Image-Jan-12-2026-01-03-49-AM.png" 
+                                alt="AI Executive" 
+                                className="w-full h-full object-cover object-[center_25%] group-hover:scale-105 transition-transform duration-700"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/80 to-transparent flex items-end p-6">
+                                <p className="text-white/90 font-medium text-sm">Кто сможет возглавить ИИ-трансформацию</p>
+                            </div>
                         </div>
-                        <h3 className="text-3xl font-extrabold uppercase tracking-tighter text-[#0F172A]">AI  Executives</h3>
-                        <ul className="space-y-3 text-lg font-medium text-slate-500">
-                            <li>• Chief AI Officer (CAIO)</li>
-                            <li>• Head of AI</li>
-                            <li>• AI Strategy Director</li>
-                        </ul>
+                        <div>
+                            <h3 className="text-3xl font-extrabold uppercase tracking-tighter text-[#0F172A] mb-4">
+                                AI&nbsp;&nbsp;Executives
+                            </h3>
+                            <ul className="space-y-3 text-lg font-medium text-slate-500">
+                                <li>• Chief AI Officer (CAIO)</li>
+                                <li>• Head of AI</li>
+                                <li>• AI Strategy Director</li>
+                            </ul>
+                        </div>
                     </div>
-                    <div className="p-8 md:p-10 bg-white rounded-[32px] border border-slate-100 shadow-sm hover:border-[#6FEAD1]/50 transition-all space-y-6 group">
-                        <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-[#6FEAD1] group-hover:scale-110 transition-transform">
-                            <Icon name="cpu" size={32} />
+                    
+                    {/* КАРТОЧКА 2: ENGINEERS */}
+                    <div className="p-6 md:p-8 bg-white rounded-[32px] border border-slate-100 shadow-sm hover:border-[#6FEAD1]/50 transition-all space-y-6 group">
+                         <div className="w-full h-64 rounded-2xl overflow-hidden relative">
+                            {/* ОБНОВЛЕНО ПОЗИЦИОНИРОВАНИЕ ФОТО */}
+                            <img 
+                                src="https://i.ibb.co/NgWK4y0r/Chat-GPT-Image-Jan-12-2026-01-04-22-AM.png" 
+                                alt="AI Engineer" 
+                                className="w-full h-full object-cover object-[center_25%] group-hover:scale-105 transition-transform duration-700"
+                            />
+                             <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/80 to-transparent flex items-end p-6">
+                                <p className="text-white/90 font-medium text-sm">Кто создает решения</p>
+                            </div>
                         </div>
-                        <h3 className="text-3xl font-extrabold uppercase tracking-tighter text-[#0F172A]">AI  Engineers</h3>
-                        <ul className="space-y-3 text-lg font-medium text-slate-500">
-                            <li>• AI Engineer / ML Ops</li>
-                            <li>• AI Automation Engineer</li>
-                            <li>• AI Product Engineer</li>
-                        </ul>
+                        <div>
+                            <h3 className="text-3xl font-extrabold uppercase tracking-tighter text-[#0F172A] mb-4">
+                                AI&nbsp;&nbsp;Engineers
+                            </h3>
+                            <ul className="space-y-3 text-lg font-medium text-slate-500">
+                                <li>• AI Engineer / ML Ops</li>
+                                <li>• AI Automation Engineer</li>
+                                <li>• AI Product Engineer</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 <AISALABubble text="Я нахожу создателей, а не просто исполнителей." centered />
@@ -160,7 +187,7 @@
                     {[
                         { title: 'Без предвзятости', desc: 'AI ищет кандидатов и делает первичный скрининг', icon: 'scale' },
                         { title: 'Оценка эксперта', desc: 'Ведущие эксперты в области AI проводят техническое собеседование с кандидатом', icon: 'brain' },
-                        { title: 'База 50k+ AI экспертов', desc: 'Самый большой глобальный пул проверенных талантов в моих руках.', icon: 'database' },
+                        { title: 'База 50k+ AI-экспертов', desc: 'У нас самый большой глобальный пул проверенных AI-талантов.', icon: 'database' },
                     ].map((adv, i) => (
                         <motion.div 
                             key={i} 
@@ -182,14 +209,14 @@
                 <div className="space-y-4 relative max-w-2xl mx-auto">
                     <div className="absolute left-[23px] top-0 bottom-0 w-px bg-slate-200" />
                     {[
-                        { step: '01', title: 'Discovery', desc: 'Определяем ваше видение AI и технические требования.' },
-                        { step: '02', title: 'AI Sourcing', desc: 'Сканирую 50k+ профилей и баз за секунды.' },
-                        { step: '03', title: 'Deep Screening', desc: 'Многоэтапная AI-оценка технических и софт-скиллов.' },
-                        { step: '04', title: 'Finalists', desc: 'Вы встречаетесь с топ-3% кандидатов, готовых строить.' },
+                        { icon: 'file-text', title: 'Требования к кандидату', desc: 'Определяем ваши требования к роли.' },
+                        { icon: 'search', title: 'Поиск кандидатов', desc: 'Сканирую 50k+ профилей и баз за секунды.' },
+                        { icon: 'code-2', title: 'Техническое интервью', desc: 'Многоэтапная AI-оценка технических и софт-скиллов.' },
+                        { icon: 'trophy', title: 'Финальные кандидаты', desc: 'Вы встречаетесь с просто с лучшими кандидатами.' },
                     ].map((p, i) => (
                         <div key={i} className="flex items-start gap-8 md:gap-10 pl-0">
-                            <div className="w-12 h-12 rounded-full bg-white border-2 border-[#6FEAD1] flex items-center justify-center shrink-0 z-10 font-black text-sm">
-                                {p.step}
+                            <div className="w-12 h-12 rounded-full bg-white border-2 border-[#6FEAD1] flex items-center justify-center shrink-0 z-10 text-[#0F172A]">
+                                <Icon name={p.icon} size={20} />
                             </div>
                             <div className="pb-8 md:pb-10">
                                 <h3 className="text-xl md:text-2xl font-extrabold uppercase tracking-tight">{p.title}</h3>
@@ -229,7 +256,7 @@
             <div className="text-center space-y-10 md:space-y-12">
                 <div className="space-y-4">
                     <h2 className="text-6xl md:text-[120px] font-black leading-none tracking-[-0.05em]">AISALA</h2>
-                    <p className="text-xl md:text-3xl font-bold text-slate-300 uppercase tracking-[0.4em]">AI-First Agency</p>
+                    <p className="text-xl md:text-3xl font-bold text-slate-300 uppercase tracking-[0.4em]">AI First Recruiting Agency</p>
                 </div>
                 
                 <div className="space-y-6">
@@ -242,7 +269,8 @@
                         <button className="group relative bg-[#0F172A] text-white px-8 md:px-12 py-5 md:py-6 rounded-2xl font-black text-xl md:text-2xl overflow-hidden transition-all hover:scale-105 active:scale-95">
                             <div className="absolute inset-0 bg-[#6FEAD1] translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                             <span className="relative z-10 flex items-center justify-center gap-3 group-hover:text-[#0F172A]">
-                                Связаться с AISALA <Icon name="mail" size={28} />
+                                {/* ИКОНКА ПЕРЕНЕСЕНА В НАЧАЛО */}
+                                <Icon name="mail" size={28} /> Связаться с AISALA 
                             </span>
                         </button>
                     </div>
