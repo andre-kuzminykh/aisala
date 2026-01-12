@@ -293,6 +293,7 @@
             
             return (
                 <motion.div
+                    id="scroll-container"
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -40 }}
@@ -320,17 +321,48 @@
                 }
             }, [isAnimating]);
 
+            const checkScrollPosition = (direction) => {
+                const container = document.getElementById('scroll-container');
+                if (!container) return true; // Если контейнера нет, разрешаем скролл слайдов
+
+                // Проверяем, есть ли полоса прокрутки
+                const isScrollable = container.scrollHeight > container.clientHeight;
+                if (!isScrollable) return true; // Если скролла нет, разрешаем переключение
+
+                // Толерантность для погрешностей вычислений
+                const tolerance = 2; 
+
+                if (direction === 'down') {
+                    // Пользователь скроллит вниз (хочет следующий слайд)
+                    // Разрешаем только если мы достигли дна контента
+                    const isAtBottom = Math.abs(container.scrollHeight - container.scrollTop - container.clientHeight) <= tolerance;
+                    return isAtBottom;
+                } else if (direction === 'up') {
+                    // Пользователь скроллит вверх (хочет предыдущий слайд)
+                    // Разрешаем только если мы в самом верху
+                    const isAtTop = container.scrollTop <= tolerance;
+                    return isAtTop;
+                }
+                return false;
+            };
+
             const handleWheel = (e) => {
                 const now = Date.now();
                 if (now - lastScrollTime.current < 1000) return;
 
                 if (Math.abs(e.deltaY) > 30) {
                     if (e.deltaY > 0) {
-                        goToSlide(currentSlide + 1);
-                        lastScrollTime.current = now;
+                        // Скролл вниз / Следующий слайд
+                        if (checkScrollPosition('down')) {
+                            goToSlide(currentSlide + 1);
+                            lastScrollTime.current = now;
+                        }
                     } else {
-                        goToSlide(currentSlide - 1);
-                        lastScrollTime.current = now;
+                        // Скролл вверх / Предыдущий слайд
+                        if (checkScrollPosition('up')) {
+                            goToSlide(currentSlide - 1);
+                            lastScrollTime.current = now;
+                        }
                     }
                 }
             };
@@ -349,9 +381,20 @@
                 if (!touchStart.current) return;
                 const touchEnd = e.changedTouches[0].clientY;
                 const diff = touchStart.current - touchEnd;
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0) goToSlide(currentSlide + 1);
-                    else goToSlide(currentSlide - 1);
+                
+                // Увеличен порог свайпа до 80px, чтобы уменьшить ложные срабатывания
+                if (Math.abs(diff) > 80) {
+                    if (diff > 0) {
+                        // Свайп вверх (палец идет вверх, контент вниз) -> Следующий слайд
+                        if (checkScrollPosition('down')) {
+                             goToSlide(currentSlide + 1);
+                        }
+                    } else {
+                         // Свайп вниз (палец идет вниз, контент вверх) -> Предыдущий слайд
+                         if (checkScrollPosition('up')) {
+                            goToSlide(currentSlide - 1);
+                         }
+                    }
                 }
                 touchStart.current = null;
             };
