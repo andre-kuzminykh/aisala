@@ -20,9 +20,10 @@
             width: 100%;
             font-family: 'Inter', sans-serif;
             background-color: #F8FAFC;
-            /* Важно: предотвращает отскок скролла на iOS, который ломает логику переключения */
+            /* Отключаем глобальный пружинящий эффект, оставляем его только внутри контейнера */
             overscroll-behavior: none; 
             touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
         }
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
@@ -100,7 +101,6 @@
                                 в 2 раза быстрее и дешевле
                             </span>
                         </h2>
-                        {/* ИСПРАВЛЕНИЕ: Кнопка заменена на ссылку */}
                         <a 
                             href="http://t.me/aisala_bot"
                             target="_blank"
@@ -183,7 +183,6 @@
                         </div>
                     </div>
                 </div>
-                {/* Убрали AISALABubble про создателей */}
             </div>
         );
 
@@ -296,7 +295,6 @@
 
         // --- ГЛАВНОЕ ПРИЛОЖЕНИЕ ---
 
-        // Обновленный SlideWrapper для решения проблем наложения
         const SlideWrapper = ({ children }) => {
             return (
                 <motion.div
@@ -305,11 +303,8 @@
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -40 }}
                     transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                    // ИСПРАВЛЕНИЕ: Используем простую flex структуру.
-                    // overflow-y-auto всегда позволяет скроллить контент.
-                    // Внутренний div (min-h-full) обеспечивает центрирование, если контента мало,
-                    // и расширяется, если контента много.
                     className="h-full w-full overflow-y-auto hide-scrollbar relative z-10"
+                    style={{ WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}
                 >
                     <div className="min-h-full w-full flex flex-col justify-center items-center px-6 py-24 md:p-20">
                         {children}
@@ -339,15 +334,17 @@
                 const isScrollable = container.scrollHeight > container.clientHeight;
                 if (!isScrollable) return true;
 
-                // ИСПРАВЛЕНИЕ: Увеличена толерантность для телефонов с высоким DPI
-                const tolerance = 10; 
+                // Увеличенный допуск для обработки 'bounce' эффекта на iOS
+                const tolerance = 20; 
 
                 if (direction === 'down') {
-                    // Проверка: Достигли ли низа?
-                    const isAtBottom = Math.abs(container.scrollHeight - container.scrollTop - container.clientHeight) <= tolerance;
+                    // Исправленная проверка: теперь мы проверяем >=, что учитывает ситуацию,
+                    // когда на iOS scrollTop становится больше максимального значения (эффект резинки).
+                    // Это решает проблему, когда Math.abs давал ложно-отрицательный результат при сильном свайпе.
+                    const isAtBottom = (container.scrollTop + container.clientHeight) >= (container.scrollHeight - tolerance);
                     return isAtBottom;
                 } else if (direction === 'up') {
-                    // Проверка: Достигли ли верха?
+                    // Аналогично для верха (scrollTop может быть отрицательным при bounce)
                     const isAtTop = container.scrollTop <= tolerance;
                     return isAtTop;
                 }
@@ -388,7 +385,7 @@
                 const touchEnd = e.changedTouches[0].clientY;
                 const diff = touchStart.current - touchEnd;
                 
-                // Порог свайпа 80px для предотвращения случайных срабатываний
+                // Порог свайпа 80px
                 if (Math.abs(diff) > 80) {
                     if (diff > 0) {
                         if (checkScrollPosition('down')) {
