@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хабар AI — Стратегия Трансформации</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --mint: #00d9a5;
+            --mint-dark: #00b88d;
+            --bg-deep: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-dim: #64748b;
+            --accent-red: #ef4444;
+            --accent-orange: #f59e0b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            --sidebar-w: 280px;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Mobile Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(2px);
+            z-index: 100;
+        }
+
+        /* Sidebar */
+        aside {
+            width: var(--sidebar-w);
+            background: #ffffff;
+            border-right: 1px solid var(--border);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+            z-index: 110;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .logo {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 18px;
+            font-weight: 900;
+            color: #000;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-circle {
+            width: 14px;
+            height: 14px;
+            background: var(--mint);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .nav-label { 
+            font-size: 10px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            color: var(--text-dim); 
+            margin: 15px 0 8px 10px; 
+            letter-spacing: 1.5px;
+        }
+
+        .nav-item {
+            padding: 12px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 217, 165, 0.08);
+            color: var(--mint-dark);
+        }
+
+        /* Main Content */
+        main {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 40px 60px;
+            background: #ffffff;
+            position: relative;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .mobile-header {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .menu-toggle {
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        h1 { font-family: 'Montserrat', sans-serif; font-size: 28px; margin: 0; font-weight: 900; line-height: 1.1; }
+        .subtitle { color: var(--text-dim); margin-top: 6px; font-size: 14px; max-width: 600px; line-height: 1.5; }
+
+        .top-btn {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 12px;
+            box-shadow: var(--shadow);
+            transition: 0.2s;
+            text-decoration: none;
+            color: inherit;
+            white-space: nowrap;
+        }
+        .top-btn:hover { border-color: var(--mint); transform: translateY(-1px); }
+
+        /* Maturity Card Dashboard */
+        .maturity-card {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 20px 25px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .maturity-card:hover { border-color: var(--mint-dark); background: #f0fdfa; }
+        .score-val { font-size: 32px; font-weight: 900; color: var(--accent-red); display: block; }
+        .score-label { font-size: 10px; font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
+
+        /* Grid */
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .tile {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            transition: 0.3s;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+        .tile:hover { transform: translateY(-4px); border-color: var(--mint-dark); box-shadow: 0 15px 30px rgba(0,0,0,0.06); }
+        .tile-icon { font-size: 24px; color: var(--mint-dark); margin-bottom: 15px; }
+        .tile-title { font-weight: 800; font-size: 16px; margin-bottom: 8px; }
+        .tile-subtitle { font-size: 12px; color: var(--text-dim); margin-bottom: 15px; min-height: 32px; line-height: 1.4; }
+        
+        .tile-progress-wrap { display: flex; align-items: center; gap: 10px; }
+        .tile-progress-bar { flex-grow: 1; height: 6px; background: #f1f5f9; border-radius: 10px; overflow: hidden; }
+        .tile-progress-fill { height: 100%; border-radius: 10px; transition: width 1.5s ease-out; }
+        .tile-pct { font-size: 11px; font-weight: 800; width: 35px; text-align: right; }
+
+        /* Detail View Elements */
+        .proc-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; gap: 20px; }
+        .gauge-svg { width: 100px; height: 60px; }
+        .gauge-bg { fill: none; stroke: #f1f5f9; stroke-width: 8; stroke-linecap: round; }
+        .gauge-fill { fill: none; stroke-width: 8; stroke-linecap: round; stroke-dasharray: 157; stroke-dashoffset: 157; transition: 1.5s; }
+        .gauge-text { display: block; font-size: 18px; font-weight: 900; margin-top: -10px; text-align: center; }
+
+        .section-box { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 25px; margin-bottom: 25px; }
+        .section-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1.5px; margin-bottom: 15px; display: block; }
+        
+        .workflow-text-block { font-size: 14px; line-height: 1.7; color: var(--text-main); background: #f8fafc; padding: 25px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 25px; }
+
+        .evolution-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .evo-card { padding: 20px; border-radius: 16px; border: 1px solid var(--border); }
+        .evo-card.asis { border-left: 4px solid var(--accent-red); background: rgba(239,68,68,0.01); }
+        .evo-card.tobe { border-left: 4px solid var(--mint-dark); background: rgba(0,217,165,0.01); }
+        .evo-card h4 { margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; color: var(--text-dim); }
+        .evo-list { list-style: none; padding: 0; margin: 0; font-size: 13px; line-height: 1.6; }
+        .evo-list li { margin-bottom: 8px; display: flex; gap: 10px; }
+
+        /* SWOT Matrix 2x2 */
+        .swot-selector { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; font-family: inherit; font-weight: 600; cursor: pointer; }
+        .swot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .swot-quadrant { padding: 25px; border-radius: 18px; border: 1px solid var(--border); position: relative; transition: 0.3s; height: 210px; overflow-y: auto; }
+        .swot-quadrant:hover { border-color: var(--mint-dark); transform: translateY(-2px); box-shadow: var(--shadow); }
+        .swot-icon { position: absolute; top: 20px; right: 20px; font-size: 24px; opacity: 0.1; }
+        .swot-label { display: block; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .swot-text { font-size: 13px; line-height: 1.5; color: var(--text-main); }
+
+        /* Audit Accordion */
+        .audit-accordion { display: grid; gap: 12px; }
+        .audit-group { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: #fff; }
+        .audit-header { 
+            padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; background: #ffffff; transition: 0.2s;
+        }
+        .audit-header:hover { background: #f8fafc; }
+        .audit-cat-title { font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 12px; }
+        .audit-cat-score { font-size: 11px; font-weight: 900; color: var(--accent-red); background: rgba(239, 68, 68, 0.05); padding: 4px 10px; border-radius: 20px; }
+        .audit-body { display: none; padding: 0 24px 20px 24px; border-top: 1px solid #f1f5f9; overflow-x: auto; }
+        .audit-group.active .audit-body { display: block; }
+        .chevron { transition: 0.3s; color: var(--text-dim); }
+        .audit-group.active .chevron { transform: rotate(180deg); }
+
+        .audit-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 500px; }
+        .audit-table th { text-align: left; padding: 12px 10px; border-bottom: 2px solid #f1f5f9; color: var(--text-dim); text-transform: uppercase; font-size: 10px; letter-spacing: 1px; }
+        .audit-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-size: 12px; vertical-align: top; line-height: 1.4; }
+
+        /* AI Projects - BUTTON STYLES */
+        .init-btn { 
+            display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; 
+            background: #ffffff; border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; 
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            text-align: left; width: 100%;
+        }
+        .init-btn:hover { 
+            border-color: var(--mint-dark); 
+            background: #f0fdfa; 
+            transform: translateX(5px);
+            box-shadow: 0 8px 20px rgba(0, 217, 165, 0.1);
+        }
+        .init-content { display: flex; align-items: center; gap: 15px; }
+        .init-btn-icon { font-size: 18px; color: var(--mint-dark); background: rgba(0, 217, 165, 0.08); padding: 10px; border-radius: 10px; }
+        .init-name { font-weight: 700; font-size: 14px; color: var(--text-main); }
+        .init-priority-tag { font-size: 9px; font-weight: 900; color: var(--mint-dark); background: rgba(0, 217, 165, 0.1); padding: 5px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid rgba(0, 217, 165, 0.2); }
+
+        /* Roadmap */
+        .roadmap-list { position: relative; padding-left: 30px; border-left: 2px solid var(--border); margin-left: 10px; }
+        .road-item { position: relative; margin-bottom: 40px; }
+        .road-item::before { content: ''; position: absolute; left: -36px; top: 8px; width: 10px; height: 10px; border-radius: 50%; background: var(--mint-dark); border: 2px solid white; }
+        .road-date { font-weight: 900; color: var(--mint-dark); font-size: 13px; margin-bottom: 12px; display: block; text-transform: uppercase; }
+        .road-projects { display: grid; gap: 10px; }
+        .road-card { 
+            background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 15px; 
+            cursor: pointer; transition: 0.2s; box-shadow: var(--shadow);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .road-card:hover { border-color: var(--mint-dark); transform: scale(1.01); box-shadow: 0 10px 25px rgba(0, 217, 165, 0.08); }
+
+        /* Drawer */
+        .drawer {
+            position: fixed; top: 0; right: -650px; width: 600px; height: 100%;
+            background: white; z-index: 2000; padding: 40px;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 1px solid var(--border);
+            box-shadow: -20px 0 60px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        .drawer.active { right: 0; }
+        .close-drawer { position: absolute; top: 25px; right: 25px; cursor: pointer; font-size: 22px; color: var(--text-dim); }
+
+        /* --- RESPONSIVE STYLES --- */
+        @media (max-width: 1024px) {
+            aside {
+                position: fixed;
+                top: 0; bottom: 0; left: 0;
+                transform: translateX(-100%);
+            }
+            aside.mobile-active {
+                transform: translateX(0);
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
+            .mobile-header {
+                display: flex;
+            }
+            main {
+                padding: 30px 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .top-nav-btns {
+                flex-direction: column;
+            }
+            .maturity-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            .score-val {
+                font-size: 42px;
+            }
+            .evolution-grid, .swot-grid {
+                grid-template-columns: 1fr;
+            }
+            .proc-header-row {
+                flex-direction: column-reverse;
+                align-items: flex-start;
+            }
+            .drawer {
+                width: 100%;
+                padding: 30px 20px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .section-box {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<aside id="sidebar">
+    <div class="logo">
+        <div class="logo-circle"></div>
+        <span>ХАБАР AI</span>
+    </div>
+    
+    <div class="nav-item active" id="nav-dashboard" onclick="showSection('dashboard')">
+        <i class="fa-solid fa-grip"></i> Обзор системы
+    </div>
+    
+    <div class="nav-label">Бизнес-процессы</div>
+    <div class="nav-item" data-id="bp03" onclick="showProcess('bp03')">Продажи и реклама</div>
+    <div class="nav-item" data-id="bp05" onclick="showProcess('bp05')">Сетка и планирование</div>
+    <div class="nav-item" data-id="bp06" onclick="showProcess('bp06')">Съёмочный процесс</div>
+    <div class="nav-item" data-id="bp07" onclick="showProcess('bp07')">Монтаж и Архив</div>
+    <div class="nav-item" data-id="bp08" onclick="showProcess('bp08')">Дизайн и графика</div>
+    <div class="nav-item" data-id="bp09" onclick="showProcess('bp09')">Закупки и аутсорс</div>
+    <div class="nav-item" data-id="bp11" onclick="showProcess('bp11')">PR и Анонсы</div>
+</aside>
+
+<main>
+    <div class="mobile-header">
+        <div class="menu-toggle" onclick="toggleSidebar()">
+            <i class="fa-solid fa-bars-staggered"></i>
+        </div>
+        <div class="logo" style="margin:0; font-size:14px;">
+            <div class="logo-circle" style="width:10px; height:10px;"></div>
+            <span>ХАБАР AI</span>
+        </div>
+        <div style="width:20px;"></div>
+    </div>
+
+    <!-- 1. DASHBOARD -->
+    <section id="dashboard-section" class="content-section">
+        <div class="header-actions">
+            <div>
+                <h1>Стратегия AI-First</h1>
+                <p class="subtitle">Перевод холдинга «Хабар» в интеллектуальную модель вещания. ИИ как основной рычаг операционной эффективности.</p>
+            </div>
+            <div class="top-nav-btns" style="display: flex; gap: 10px;">
+                <div class="top-btn" onclick="showSection('roadmap')">
+                    <i class="fa-solid fa-route" style="color:var(--mint-dark)"></i> Роадмап 2026
+                </div>
+                <a href="https://docs.google.com/document/d/1yIhRzIgjJbYXlRyPDhiuhyIN-xFlDZQjcks8K4rVrUs/edit?tab=t.0" target="_blank" class="top-btn">
+                    <i class="fa-solid fa-file-lines" style="color:var(--accent-red)"></i> Стратегия
+                </a>
+            </div>
+        </div>
+
+        <div class="maturity-card" onclick="showSection('audit')">
+            <div>
+                <h3 style="margin:0; font-size:16px;">Индекс ИИ-зрелости холдинга</h3>
+                <p style="margin:4px 0 0 0; font-size:13px; color:var(--text-dim);">Начальный уровень (10%). Оценка по 35 контрольным точкам.</p>
+            </div>
+            <div class="maturity-score">
+                <span class="score-val">10.0%</span>
+                <span class="score-label">Общий результат</span>
+            </div>
+        </div>
+        
+        <div class="process-grid" id="main-grid"></div>
+    </section>
+
+    <!-- 2. AUDIT SECTION -->
+    <section id="audit-section" class="content-section" style="display:none;">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+            <i class="fa-solid fa-arrow-left" style="cursor:pointer; color:var(--accent-red)" onclick="showSection('dashboard')"></i>
+            <h1>Аудит зрелости и SWOT</h1>
+        </div>
+
+        <div class="section-box" style="background:#f8fafc;">
+            <span class="section-title">Аналитика внедрения (SWOT)</span>
+            <select class="swot-selector" id="swot-proc-select" onchange="updateSwotUI()">
+                <!-- Dynamic Options -->
+            </select>
+            
+            <div class="swot-grid">
+                <div class="swot-quadrant" style="background: rgba(16,185,129,0.03); border-color: rgba(16,185,129,0.2);">
+                    <i class="fa-solid fa-bolt swot-icon" style="color:#10b981;"></i>
+                    <span class="swot-label" style="color:#10b981;">S (Strengths)</span>
+                    <div class="swot-text" id="swot-s"></div>
+                </div>
+                <div class="swot-quadrant" style="background: rgba(239,68,68,0.03); border-color: rgba(239,68,68,0.2);">
+                    <i class="fa-solid fa-triangle-exclamation swot-icon" style="color:#ef4444;"></i>
+                    <span class="swot-label" style="color:#ef4444;">W (Weaknesses)</span>
+                    <div class="swot-text" id="swot-w"></div>
+                </div>
+                <div class="swot-quadrant" style="background: rgba(37,99,235,0.03); border-color: rgba(37,99,235,0.2);">
+                    <i class="fa-solid fa-star swot-icon" style="color:#2563eb;"></i>
+                    <span class="swot-label" style="color:#2563eb;">O (Opportunities)</span>
+                    <div class="swot-text" id="swot-o"></div>
+                </div>
+                <div class="swot-quadrant" style="background: rgba(245,158,11,0.03); border-color: rgba(245,158,11,0.2);">
+                    <i class="fa-solid fa-shield-halved swot-icon" style="color:#f59e0b;"></i>
+                    <span class="swot-label" style="color:#f59e0b;">T (Threats)</span>
+                    <div class="swot-text" id="swot-t"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <span class="section-title" style="margin:0;">Детальный аудит</span>
+                <div style="font-weight: 900; color: var(--accent-red); font-size: 18px;">1.4 / 5.0</div>
+            </div>
+            <div class="audit-accordion" id="audit-accordion"></div>
+        </div>
+    </section>
+
+    <!-- 3. PROCESS DETAIL -->
+    <section id="process-section" class="content-section" style="display:none;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+            <i class="fa-solid fa-arrow-left" style="cursor:pointer;" onclick="showSection('dashboard')"></i>
+            <span style="font-size:10px; font-weight:900; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px;">Карта трансформации TO-BE</span>
+        </div>
+
+        <div class="proc-header-row">
+            <div>
+                <h1 id="proc-title">Процесс</h1>
+                <p class="subtitle" id="proc-desc"></p>
+            </div>
+            <div class="gauge-box">
+                <svg class="gauge-svg">
+                    <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" />
+                    <path class="gauge-fill" id="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50" />
+                </svg>
+                <div class="gauge-text" id="gauge-val">0%</div>
+                <div style="font-size:8px; text-align:center; text-transform:uppercase; color:var(--text-dim); margin-top:4px;">Готовность</div>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <span class="section-title">Схемы процесса</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+                <a id="proc-link-asis" href="#" target="_blank" class="top-btn" style="flex:1; justify-content:center; border-color:var(--accent-red); color:var(--accent-red);">
+                    <i class="fa-solid fa-map"></i> AS-IS
+                </a>
+                <a id="proc-link-tobe" href="#" target="_blank" class="top-btn" style="flex:1; justify-content:center; border-color:var(--mint-dark); color:var(--mint-dark);">
+                    <i class="fa-solid fa-wand-sparkles"></i> TO-BE
+                </a>
+            </div>
+        </div>
+
+        <div class="section-box">
+            <span class="section-title">Целевое состояние</span>
+            <p id="proc-goal" style="font-size:14px; margin:0; line-height:1.7; font-weight:500;"></p>
+        </div>
+
+        <div id="proc-workflow-text" class="workflow-text-block"></div>
+
+        <div class="evolution-grid">
+            <div class="evo-card asis">
+                <h4>AS-IS (Проблемы)</h4>
+                <ul class="evo-list" id="proc-asis"></ul>
+            </div>
+            <div class="evo-card tobe">
+                <h4>TO-BE (Решения ИИ)</h4>
+                <ul class="evo-list" id="proc-tobe"></ul>
+            </div>
+        </div>
+
+        <div style="margin-top:25px;">
+            <span class="section-title">Ключевые инициативы</span>
+            <div id="proc-inits" style="display: grid; gap: 12px;"></div>
+        </div>
+    </section>
+
+    <!-- 4. ROADMAP -->
+    <section id="roadmap-section" class="content-section" style="display:none;">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+            <i class="fa-solid fa-arrow-left" style="cursor:pointer; color:var(--mint-dark)" onclick="showSection('dashboard')"></i>
+            <h1>План реализации 2026</h1>
+        </div>
+        <div class="roadmap-list" id="roadmap-container"></div>
+    </section>
+</main>
+
+<div class="drawer" id="init-drawer">
+    <span class="close-drawer" onclick="closeDrawer()">&times;</span>
+    <span id="dr-tag" style="font-size:10px; font-weight:800; color:var(--mint-dark); text-transform:uppercase;">Priority</span>
+    <h2 id="dr-title" style="margin: 10px 0; line-height: 1.2;">Название</h2>
+    <hr style="border:0; border-top:1px solid #e2e8f0; margin:25px 0;">
+    <p id="dr-text" style="color:var(--text-main); line-height:1.7; font-size:14px;"></p>
+    <div style="background:#f0fdfa; padding:20px; border-radius:14px; margin-top:30px; border: 1px solid var(--border);">
+        <h4 style="margin:0 0 8px 0; color:var(--mint-dark); font-size:11px; text-transform:uppercase; letter-spacing:1px;">Эффект от внедрения</h4>
+        <p style="margin:0; font-size:13px; line-height:1.6;" id="dr-effect"></p>
+    </div>
+</div>
+
+<script>
+    const auditFull = [
+        { cat: "I. Стратегия и управление", score: 1.4, items: [
+            { n: "1. ИИ-стратегия", v: 1, c: "ИИ используется фрагментарно, стратегии трансформации нет." },
+            { n: "2. Вовлеченность руководства", v: 2, c: "Признают важность, но лично не участвуют в использовании." },
+            { n: "3. Эффект и ROI", v: 1, c: "Метрики внедрения ИИ не измеряются." },
+            { n: "4. Структура управления", v: 2, c: "Ответственные — линейные руководители." },
+            { n: "5. Операционная модель", v: 1, c: "Бизнес полностью завязан на людях." }
+        ]},
+        { cat: "II. Люди и культура", score: 1.4, items: [
+            { n: "1. ИИ-таланты", v: 1, c: "Найм под задачи, общей ИИ-HR-стратегии нет." },
+            { n: "2. Работа ИИ-команд", v: 1, c: "Работают без единой методологии." },
+            { n: "3. Культура", v: 2, c: "Дизайнеры активно используют ИИ." },
+            { n: "4. Развитие компетенций", v: 2, c: "Обучение носит эпизодический характер." },
+            { n: "5. Интеграция в HR", v: 1, c: "ИИ не участвует в HR-цикле." }
+        ]},
+        { cat: "III. Инфраструктура", score: 1.8, items: [
+            { n: "1. Готовность к нагрузкам", v: 2, c: "Нет единой среды обучения." },
+            { n: "2. Доступность ресурсов", v: 1, c: "Ресурсы выделяются вручную." },
+            { n: "3. Управление инцидентами", v: 1, c: "Реактивная поддержка." },
+            { n: "4. Доступ к библиотекам", v: 3, c: "Есть возможность использовать open-source." },
+            { n: "5. Безопасность", v: 2, c: "Базовые протоколы без учета ИИ." }
+        ]},
+        { cat: "IV. Данные", score: 1.2, items: [
+            { n: "1. Управление данными", v: 1, c: "Данные разрознены." },
+            { n: "2. Фабрика данных", v: 1, c: "«Единого источника правды» нет." },
+            { n: "3. Качество данных", v: 1, c: "Качество не контролируется." },
+            { n: "4. Принятие решений", v: 2, c: "Есть регулярная аналитика." },
+            { n: "5. Поддержка обучения", v: 1, c: "Архив без метаданных." }
+        ]},
+        { cat: "V. Модели", score: 1.0, items: [
+            { n: "1. Портфель моделей", v: 1, c: "Используются внешние Runway, Kling." },
+            { n: "2. Доля в продакшене", v: 1, c: "Не встроены в ядро." },
+            { n: "3. Скорость вывода", v: 1, c: "Модели не обучались." },
+            { n: "4. Мониторинг и контроль", v: 1, c: "Мониторинг выдачи отсутствует." },
+            { n: "5. Инженерные практики", v: 1, c: "Нет ИИ-инженеров." }
+        ]},
+        { cat: "VI. Внедрение", score: 1.6, items: [
+            { n: "1. Доля ИИ в процессах", v: 2, c: "Внедрен точечно в графике." },
+            { n: "2. ИИ-аугментация", v: 2, c: "Помогает только дизайнерам." },
+            { n: "3. Охват клиентских путей", v: 1, c: "Клиенты не видят ИИ." },
+            { n: "4. Качество внедрения", v: 1, c: "Методологии AgentOps нет." },
+            { n: "5. Удовлетворенность ИИ", v: 2, c: "Энтузиасты довольны." }
+        ]},
+        { cat: "VII. R&D", score: 1.0, items: [
+            { n: "1. Научные партнерства", v: 1, c: "Связи с университетами нет." },
+            { n: "2. Качество R&D", v: 1, c: "Исследовательской функции нет." },
+            { n: "3. Доля R&D-инициатив", v: 1, c: "Весь фокус на текучке." },
+            { n: "4. Применимость", v: 1, c: "Нет экспериментов." },
+            { n: "5. R&D-активность", v: 1, c: "Кейсами не делятся." }
+        ]}
+    ];
+
+    const swotData = [
+        { proc: "Продажи и реклама", s: "Повторяемые артефакты: КП/отчеты. Наличие Sales House.", w: "CRM/Excel учет, нет единого SoT. КП собираются вручную.", o: "Авто-сбор данных + генерация КП из шаблонов. Автогенерация кейсов.", t: "Ошибки в цифрах → репутационный риск." },
+        { proc: "Сетка и планирование", s: "Ритмичный цикл. Опорные ИТ-системы вещания.", w: "Разрозненные PDF/письма. Неявные правила у экспертов.", o: "Извлечение параметров из договоров. Автопроверки сетки.", t: "Ошибка сетки = репутационный риск." },
+        { proc: "Съёмочный процесс", s: "Высокая повторяемость заявок. Шаблонизируемые документы.", w: "Заявки в WhatsApp → разрыв данных. Ошибки в аккредитациях.", o: "Единый реестр + авто-ориентировка дня. ИИ-Документолог.", t: "Ошибка в документах = репутация." },
+        { proc: "Монтаж и Архив", s: "Сценарий сюжета = вход для поиска. Огромный видеофонд.", w: "Архив без метаданных. Нет прямого доступа к БД Dalet.", o: "ИИ-индексация + семантический поиск. Авто-сборка Rough Cut.", t: "Ошибки описаний ИИ → редакционный риск." },
+        { proc: "Дизайн и графика", s: "Цифровой процесс. Высокое использование AI дизайнерами.", w: "Нечеткие ТЗ. Проблема 'белого листа'. Хаос во входе.", o: "AI-бриф + уточнения. Авто-драфты из шаблонов.", t: "Риск галлюцинаций ИИ." },
+        { proc: "Закупки и аутсорс", s: "Типовые документы. Регулярные подрядчики.", w: "Нестандартизированные ТЗ. Ручная вычитка сценариев.", o: "Шаблоны ТЗ. ИИ-аудитор сценариев и видео.", t: "Ошибки сопоставления → потери." },
+        { proc: "PR и Анонсы", s: "Брендбук легко стандартизировать. Повторяемые нарезки.", w: "Контент живет в разных каналах. Ручной отбор хайлайтов.", o: "Единый контент-календарь. AI-хайлайты и AI-ведущий.", t: "Ошибки в текстах → редакционный риск." }
+    ];
+
+    const processData = {
+        bp03: {
+            title: "Продажи и реклама", desc: "Коммерческие предложения и отчетность.", readiness: 12, icon: "fa-bullseye",
+            asis: "https://docs.google.com/document/d/1y00rB2Itk0YohWYby16kb3BwCMqYIGuBHTKqiS3b7dM/edit?usp=sharing",
+            tobe: "https://docs.google.com/document/d/1MozsAE51_gKbCAtW_DsjMfL5nejM7N5m6N9De8nf_qI/edit?tab=t.0#heading=h.bhgv5hhchiwv",
+            goal: "Обеспечить выручку и сократить время подготовки КП с дней до минут.",
+            workflow: "Формирование карточки проекта как SoT. ИИ-генератор автоматически верстает брендированное КП. После реализации система формирует сценарии кейс-роликов на основе фактов выходов.",
+            asisL: ["Сбор данных вручную", "Верстка КП занимает 1-2 дня", "Ручной поиск тайм-кодов"],
+            tobeL: ["Карточка проекта как SoT", "Генератор КП", "AI Case Maker"],
+            initiatives: [
+                { title: "Карточка проекта канала", priority: "Core", desc: "Централизованная база проекта, объединяющая контент и коммерцию.", effect: "Устранение рассинхрона. Повышение точности данных." },
+                { title: "Генератор КП (Презентации)", priority: "Quick Win", desc: "Авто-сборка презентаций по шаблонам с дизайном клиента.", effect: "Подготовка КП за 15 минут. Стандарт качества." },
+                { title: "Генератор кейс-роликов", priority: "Value", desc: "Подготовка ТЗ и сценариев для кейсов на основе фактов.", effect: "Быстрое создание портфолио для новых продаж." }
+            ]
+        },
+        bp05: {
+            title: "Сетка и планирование", desc: "Сетка вещания и учет прав.", readiness: 5, icon: "fa-calendar-days",
+            asis: "https://drive.google.com/file/d/1sUZ-xu56vSnFFr_JRftqOi9s60i7-t8D/view?usp=sharing",
+            tobe: "https://docs.google.com/document/d/1pw7nfZyf8Q1bbGkx6hCIJjee9naZ_9nSjSV_PUvvFUU/edit?tab=t.0#heading=h.lbr4c3bh7cvn",
+            goal: "Утвержденная сетка на основе ИИ-рекомендаций.",
+            workflow: "ИИ-агент анализирует историю показов и предлагает наполнение слотов. Система проверяет лицензии и цензы, программный директор утверждает вариант.",
+            asisL: ["Разрозненные PDF", "Ручной ресерч фильмов", "Неявные правила планирования"],
+            tobeL: ["ИИ-Агент рекомендаций", "Автопроверка лицензий", "Прогноз доли аудитории"],
+            initiatives: [
+                { title: "Агент рекомендаций контента", priority: "Strategic", desc: "Подбор контента на основе ЦА и прав.", effect: "Повышение доли аудитории. Снижение рисков нарушений." }
+            ]
+        },
+        bp06: {
+            title: "Съёмочный процесс", desc: "Диспетчеризация групп и ресурсов.", readiness: 8, icon: "fa-video",
+            asis: "https://drive.google.com/file/d/13FHoVOTAeChfHMJKFLx6i-CX9TmaUqlW/view?usp=sharing",
+            tobe: "https://docs.google.com/document/d/1kIsxOd_RjJOgpSJ9C-T3wp6viSexnIGzEsU3-KWFChc/edit?tab=t.0#heading=h.m5498d505lkw",
+            goal: "Бесперебойная работа групп без потери заявок.",
+            workflow: "Заявки поступают в единый реестр. Система сопоставляет их с планом, проверяет технику. ИИ-агент готовит аккредитации, группы получают ориентировку дня.",
+            asisL: ["Заявки в WhatsApp", "Ручной учет камер", "Ошибки в аккредитациях"],
+            tobeL: ["Единый реестр заявок", "Авто-ориентировка дня", "ИИ-Документолог"],
+            initiatives: [
+                { title: "Единый реестр заявок", priority: "Core", desc: "Точка входа для съемок. Исключает потерю данных.", effect: "Устранение 100% потерь заявок." },
+                { title: "Рабочий план съемок", desc: "Интерактивный календарь с выявлением конфликтов.", effect: "Координация цехов в реальном времени." },
+                { title: "ИИ-агент Документолог", priority: "Quick Win", desc: "Авто-генерация документов по шаблонам.", effect: "Исключение ошибок в реквизитах." }
+            ]
+        },
+        bp07: {
+            title: "Монтаж и Архив", desc: "Видеофонд и подготовка монтажа.", readiness: 7, icon: "fa-folder-open",
+            asis: "https://drive.google.com/file/d/1xxp6CFiHC0f4lDUlTZGJzfBOmCJuu7E5/view?usp=sharing",
+            tobe: "https://docs.google.com/document/d/1Qbq8hjkBMw1Kz-_ncbn5_o00ZJnq8l0SNGy-3rR0E6M/edit?tab=t.0#heading=h.jtxg0pyk60zi",
+            goal: "Семантический поиск и автосборка черновиков.",
+            workflow: "Автоматическая индексация материала. Поиск кадров по смыслу сценария. ИИ собирает черновой монтаж (Rough Cut) для финализации монтажером.",
+            asisL: ["Архив без описаний", "Ручной отбор кадров часами", "Долгий поиск по памяти"],
+            tobeL: ["ИИ-индексация", "Семантический поиск", "Автосборка драфта"],
+            initiatives: [
+                { title: "ИИ-индексация архива", priority: "Strategic", desc: "Распознавание лиц, объектов и транскрибация.", effect: "Сокращение времени поиска в 10 раз." },
+                { title: "Семантический поиск по сценарию", desc: "Поиск кадров по смыслу происходящего на экране.", effect: "Мгновенный подбор видеоряда под текст." },
+                { title: "Автосборка драфтов (Rough Cut)", priority: "Innovation", desc: "Склейка роликов под ритм сценария.", effect: "Экономия часов на черновую работу." }
+            ]
+        },
+        bp08: {
+            title: "Дизайн и графика", desc: "Оперативная и имиджевая графика.", readiness: 18, icon: "fa-palette",
+            asis: "https://drive.google.com/file/d/1y86T3teVPMpknEum1GpcpfL_i8ggea9Q/view?usp=sharing",
+            tobe: "https://docs.google.com/document/d/1sacN-ArQh1Jy_NlK2P5MQFn1RNBQ2qtO2eb6Jwf2GaQ/edit?tab=t.0",
+            goal: "Управляемый вход ТЗ и ускорение через ИИ.",
+            workflow: "Подача ТЗ через AI-бриф с уточнениями. Классификация работ и предложение первых драфтов. Дизайнер правит основу и экспортирует ассеты.",
+            asisL: ["Нечеткие ТЗ", "Рутина адаптации SMM", "Много итераций правок"],
+            tobeL: ["Умный AI-бриф", "ИИ-драфты", "Авто-ресайз"],
+            initiatives: [
+                { title: "AI-бриф с уточнениями", priority: "Quick Win", desc: "Интерфейс подачи ТЗ без неопределенности.", effect: "Снижение итераций правок на 30%." },
+                { title: "ИИ-драфты из шаблонов", desc: "Генерация вариантов из библиотеки ассетов.", effect: "Дизайнер переходит сразу к тонкой настройке." }
+            ]
+        },
+        bp09: {
+            title: "Закупки и аутсорс", desc: "Контроль качества подрядного контента.", readiness: 10, icon: "fa-handshake",
+            asis: "https://drive.google.com/file/d/1STvbI7f3tLxbXgXIdM0h4tSzY4kw2QXd/view?usp=sharing",
+            tobe: "https://docs.google.com/document/d/1sVwf99-YmOOhP3rSiHhQ682xXJEYu41HZogEs3MHDFc/edit?tab=t.0#heading=h.jp9dmyi3051p",
+            goal: "Минимизация ручной вычитки и субъективности приемки.",
+            workflow: "Фиксация Baseline-сценария. ИИ-аудит каждой итерации правок. Сверка финального видео с текстом через транскрибацию.",
+            asisL: ["Ручная вычитка сценариев", "Субъективная приемка видео", "Разрывы в контроле сроков"],
+            tobeL: ["ИИ-аудитор сценариев", "Сверка видео по тексту", "Авто-протокол правок"],
+            initiatives: [
+                { title: "ИИ-аудитор сценариев", priority: "Tactical", desc: "Анализ отклонений от требований.", effect: "Объективизация споров с подрядчиками." },
+                { title: "ИИ-аудитор сценариев с видео", desc: "Авто-проверка соответствия картинки звуку.", effect: "Быстрая приемка. Исключение брака." }
+            ]
+        },
+        bp11: {
+            title: "PR и Анонсы", desc: "Анонсы и SMM-продвижение.", readiness: 10, icon: "fa-bullhorn",
+            asis: "https://drive.google.com/file/d/15SO2A7J0LmHerumsEYraS8zAbToY64jf/view?usp=sharing",
+            tobe: "https://docs.google.com/document/d/1XPmiXbW34uj5aYGvjPKGKwW_1ChxFELNbVbDNiCBjE0/edit?tab=t.0#heading=h.r8n4uvtb9hmo",
+            goal: "Масштабирование анонсов через хайлайты и AI-ведущего.",
+            workflow: "Автопланирование из сетки. ИИ отбирает хайлайты, пишет тексты и бриф диктору. AI-ведущий генерирует видео для SMM.",
+            asisL: ["Ручной отбор кадров", "Тексты с нуля", "Контент в разных каналах"],
+            tobeL: ["AI-хайлайты", "AI-Ведущий", "Автопланирование"],
+            initiatives: [
+                { title: "AI-хайлайты и структура анонса", priority: "Quick Win", desc: "Отбор эмоциональных сцен для промо.", effect: "Ускорение подготовки. Рост вовлеченности." },
+                { title: "AI-Ведущий", priority: "Innovation", desc: "Генерация образа и голоса для вещания 24/7.", effect: "Масштабирование без штатных дикторов." }
+            ]
+        }
+    };
+
+    const roadmapData = [
+        { date: "Февраль 2026: Quick Wins", inits: ["Генератор КП", "Генератор кейс-роликов", "ИИ-агент Документолог", "AI-бриф с уточнениями", "AI-хайлайты", "AI-Ведущий"] },
+        { date: "Март - Апрель: Tactical", inits: ["Агент рекомендаций контента", "ИИ-аудитор сценариев", "Семантический поиск", "Автосборка драфтов", "ИИ-драфты дизайна"] },
+        { date: "Май - Декабрь: Strategy", inits: ["Карточка проекта канала", "ИИ-индексация архива", "Единый реестр заявок", "Рабочий план съемок"] }
+    ];
+
+    function init() {
+        const grid = document.getElementById('main-grid');
+        grid.innerHTML = "";
+        Object.keys(processData).forEach(key => {
+            const p = processData[key];
+            const color = (p.readiness >= 15) ? 'var(--accent-orange)' : 'var(--accent-red)';
+            grid.innerHTML += `
+                <div class="tile" onclick="showProcess('${key}')">
+                    <i class="fa-solid ${p.icon} tile-icon"></i>
+                    <div class="tile-title">${p.title}</div>
+                    <div class="tile-subtitle">${p.desc}</div>
+                    <div class="tile-progress-wrap">
+                        <div class="tile-progress-bar"><div class="tile-progress-fill" style="width: ${p.readiness}%; background: ${color}"></div></div>
+                        <div class="tile-pct" style="color:${color}">${p.readiness}%</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        const swotSelect = document.getElementById('swot-proc-select');
+        swotData.forEach((d, idx) => {
+            swotSelect.innerHTML += `<option value="${idx}">${d.proc}</option>`;
+        });
+        updateSwotUI();
+
+        const accordion = document.getElementById('audit-accordion');
+        accordion.innerHTML = "";
+        auditFull.forEach((g, idx) => {
+            let tableRows = g.items.map(a => `
+                <tr>
+                    <td style="width: 30%; font-weight:600;">${a.n}</td>
+                    <td style="font-weight:900; color:var(--accent-red); text-align:center;">${a.v}</td>
+                    <td>${a.c}</td>
+                </tr>
+            `).join('');
+            accordion.innerHTML += `
+                <div class="audit-group" id="audit-group-${idx}">
+                    <div class="audit-header" onclick="toggleAuditGroup(${idx})">
+                        <div class="audit-cat-title"><i class="fa-solid fa-folder-tree" style="color:var(--mint-dark)"></i> ${g.cat}</div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span class="audit-cat-score">${g.score}</span>
+                            <i class="fa-solid fa-chevron-down chevron"></i>
+                        </div>
+                    </div>
+                    <div class="audit-body">
+                        <table class="audit-table">
+                            <thead><tr><th>Параметр</th><th>Балл</th><th>Наблюдения</th></tr></thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        });
+
+        const roadCont = document.getElementById('roadmap-container');
+        roadCont.innerHTML = roadmapData.map(r => {
+            let cards = r.inits.map(title => {
+                return `<div class="road-card" onclick="openInitiativeByName('${title}')"><strong>${title}</strong><i class="fa-solid fa-chevron-right" style="font-size:10px; color:#e2e8f0;"></i></div>`;
+            }).join('');
+            return `<div class="road-item"><span class="road-date">${r.date}</span><div class="road-projects">${cards}</div></div>`;
+        }).join('');
+    }
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('mobile-active');
+        document.getElementById('sidebar-overlay').classList.toggle('active');
+    }
+
+    function updateSwotUI() {
+        const idx = document.getElementById('swot-proc-select').value;
+        const d = swotData[idx];
+        document.getElementById('swot-s').innerText = d.s;
+        document.getElementById('swot-w').innerText = d.w;
+        document.getElementById('swot-o').innerText = d.o;
+        document.getElementById('swot-t').innerText = d.t;
+    }
+
+    function toggleAuditGroup(idx) { document.getElementById(`audit-group-${idx}`).classList.toggle('active'); }
+    
+    function findInitByTitle(title) { 
+        for (let proc in processData) { 
+            let match = processData[proc].initiatives.find(i => i.title.toLowerCase().includes(title.toLowerCase())); 
+            if (match) return match; 
+        } 
+        return { title: title, desc: "Детализируется в ходе реализации.", effect: "Повышение производительности.", priority: "Strategic" }; 
+    }
+
+    function showSection(id) {
+        document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(id + '-section').style.display = 'block';
+        if (id === 'dashboard') document.getElementById('nav-dashboard').classList.add('active');
+        
+        // Close sidebar on mobile after selection
+        if (window.innerWidth <= 1024) {
+            document.getElementById('sidebar').classList.remove('mobile-active');
+            document.getElementById('sidebar-overlay').classList.remove('active');
+        }
+        closeDrawer();
+    }
+
+    function showProcess(id) {
+        const d = processData[id];
+        showSection('process');
+        document.querySelectorAll('.nav-item').forEach(n => {
+            if (n.getAttribute('data-id') === id) n.classList.add('active');
+        });
+        document.getElementById('proc-title').innerText = d.title;
+        document.getElementById('proc-desc').innerText = d.desc;
+        document.getElementById('proc-goal').innerText = d.goal;
+        document.getElementById('proc-link-asis').href = d.asis;
+        document.getElementById('proc-link-tobe').href = d.tobe;
+        document.getElementById('gauge-fill').style.strokeDashoffset = 157 - (157 * d.readiness / 100); 
+        document.getElementById('gauge-fill').style.stroke = (d.readiness >= 15) ? 'var(--accent-orange)' : 'var(--accent-red)';
+        document.getElementById('gauge-val').innerText = d.readiness + "%"; 
+        document.getElementById('gauge-val').style.color = (d.readiness >= 15) ? 'var(--accent-orange)' : 'var(--accent-red)';
+        document.getElementById('proc-workflow-text').innerText = d.workflow;
+        document.getElementById('proc-asis').innerHTML = d.asisL.map(i => `<li><i class="fa-solid fa-circle-xmark" style="color:var(--accent-red)"></i> ${i}</li>`).join('');
+        document.getElementById('proc-tobe').innerHTML = d.tobeL.map(i => `<li><i class="fa-solid fa-circle-check" style="color:var(--mint-dark)"></i> ${i}</li>`).join('');
+        document.getElementById('proc-inits').innerHTML = d.initiatives.map((init, idx) => `
+            <button class="init-btn" onclick="openInitiative('${id}', ${idx})">
+                <div class="init-content"><i class="fa-solid fa-bolt-lightning init-btn-icon"></i><div class="init-name">${init.title}</div></div>
+                <div class="init-priority-tag">${init.priority || 'Tactical'}</div>
+            </button>`).join('');
+    }
+
+    function openInitiative(procId, index) { fillDrawer(processData[procId].initiatives[index]); }
+    function openInitiativeByName(title) { fillDrawer(findInitByTitle(title)); }
+    function fillDrawer(init) {
+        document.getElementById('dr-tag').innerText = init.priority || 'Project';
+        document.getElementById('dr-title').innerText = init.title;
+        document.getElementById('dr-text').innerText = init.desc;
+        document.getElementById('dr-effect').innerText = init.effect;
+        document.getElementById('init-drawer').classList.add('active');
+    }
+    function closeDrawer() { document.getElementById('init-drawer').classList.remove('active'); }
+
+    window.onload = init;
+</script>
+</body>
+</html>
