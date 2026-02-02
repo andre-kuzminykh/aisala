@@ -64,20 +64,16 @@
         const MINT_COLOR = '#6FEAD1';
         const STATIC_IMAGE_URL = "https://i.ibb.co/LXWLn6Wc/Chat-GPT-Image-Feb-2-2026-04-07-42-PM.png";
 
-        // Генерация фавикона динамически
+        // Генерация фавикона
         function createFavicon() {
             const canvas = document.createElement('canvas');
             canvas.width = 32;
             canvas.height = 32;
             const ctx = canvas.getContext('2d');
-            
-            // Рисуем мятный круг
             ctx.beginPath();
             ctx.arc(16, 16, 16, 0, Math.PI * 2);
             ctx.fillStyle = MINT_COLOR;
             ctx.fill();
-            
-            // Загружаем лицо
             const img = new Image();
             img.crossOrigin = "anonymous";
             img.src = STATIC_IMAGE_URL;
@@ -86,10 +82,8 @@
                 ctx.beginPath();
                 ctx.arc(16, 16, 14, 0, Math.PI * 2);
                 ctx.clip();
-                // Отрисовка с акцентом на лицо (смещение как в CSS)
                 ctx.drawImage(img, -5, 0, 42, 42); 
                 ctx.restore();
-                
                 const link = document.createElement('link');
                 link.rel = 'icon';
                 link.href = canvas.toDataURL();
@@ -213,7 +207,7 @@
                     { i: "search", t: "Анализ ключевых процессов" },
                     { i: "file-text", t: "Модель AS-IS" },
                     { i: "layout", t: "Целевая модель TO-BE" },
-                    { i: "bar-chart", t: "Индекс ИИ-зрелости" }
+                    { i: "bar-chart-3", t: "Индекс ИИ-зрелости" }
                 ],
                 footer: "Результат: стратегия ИИ-трансформации"
             },
@@ -222,7 +216,7 @@
                 title: "Стратегия",
                 subtitle: "Персональный AI-playbook",
                 items: [
-                    { i: "bar-chart", t: "SWOT-анализ и Быстрые победы" },
+                    { i: "bar-chart-3", t: "SWOT-анализ и Быстрые победы" },
                     { i: "target", t: "Тактические шаги (3–6 месяцев)" },
                     { i: "rocket", t: "Стратегические направления" },
                     { i: "trending-up", t: "ROI и экономический эффект" }
@@ -568,7 +562,7 @@
                 id: 42,
                 type: "last",
                 title: `<div class="leading-[1.1] font-black uppercase text-center w-full block"><span class="block mb-4 md:mb-8">AI-First государство —</span><span class="text-[#6FEAD1]">основа новой экономики</span></div>`,
-                subtitle: `<div class="text-center w-full block text-slate-400 font-bold uppercase tracking-widest text-lg md:text-3xl mt-4 md:mt-8">Будущее начинается сегодня</div>`,
+                subtitle: `<div class="text-center w-full block text-slate-400 font-bold uppercase tracking-widest text-lg md:text-2xl mt-4 md:mt-8">Будущее начинается сегодня</div>`,
                 items: [
                     { i: "trending-up", t: "Новая производительность" },
                     { i: "target", t: "Новое качество управления" },
@@ -593,17 +587,17 @@
             const wrapper = document.createElement('div');
             wrapper.className = `w-full flex flex-col ${isLast ? 'items-center text-center' : 'items-start text-left'} slide-enter`;
             
-            // Title
+            // Title - SLIGHTLY SMALLER ON DESKTOP (lg:)
             const title = document.createElement('h1');
             title.className = `font-black uppercase leading-[0.92] tracking-tight mb-1 md:mb-3 
-                ${isLast ? 'text-[clamp(1.6rem,6vh,3rem)] md:mb-2' : isHero ? 'text-[clamp(2.6rem,10.5vh,6rem)]' : 'text-[clamp(1.5rem,4.5vh,3rem)]'}`;
+                ${isLast ? 'text-[clamp(1.6rem,6vh,3rem)] lg:text-[2.6rem] md:mb-2' : isHero ? 'text-[clamp(2.6rem,10.5vh,6rem)] lg:text-[4.5rem]' : 'text-[clamp(1.5rem,4.5vh,3rem)] lg:text-[2.4rem]'}`;
             title.innerHTML = slide.title;
             wrapper.appendChild(title);
 
-            // Subtitle
+            // Subtitle - SLIGHTLY SMALLER ON DESKTOP (lg:)
             const subtitle = document.createElement('h2');
             subtitle.className = `font-bold uppercase tracking-tight mb-3 md:mb-6
-                ${isLast ? 'mt-0' : isHero ? 'text-[clamp(1.1rem,3.2vh,2.3rem)]' : 'text-[clamp(1rem,2.8vh,1.8rem)] text-[#6FEAD1]'}
+                ${isLast ? 'mt-0' : isHero ? 'text-[clamp(1.1rem,3.2vh,2.3rem)] lg:text-[1.8rem]' : 'text-[clamp(1rem,2.8vh,1.8rem)] lg:text-[1.4rem] text-[#6FEAD1]'}
                 ${isHero ? 'text-[#6FEAD1]' : ''}`;
             subtitle.innerHTML = slide.subtitle;
             wrapper.appendChild(subtitle);
@@ -624,8 +618,8 @@
                 slide.cases.forEach(c => {
                     grid.innerHTML += `
                         <div class="bg-white p-3 md:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center gap-2">
-                            <i data-lucide="${c.i}" class="w-8 h-8 text-[#6FEAD1]"></i>
-                            <span class="font-bold text-slate-700 text-[10px] md:text-sm text-center uppercase tracking-wider leading-none">${c.n}</span>
+                            <i data-lucide="${c.i}" class="w-8 h-8 lg:w-7 lg:h-7 text-[#6FEAD1]"></i>
+                            <span class="font-bold text-slate-700 text-[10px] md:text-sm lg:text-xs text-center uppercase tracking-wider leading-none">${c.n}</span>
                         </div>`;
                 });
                 contentArea.appendChild(grid);
@@ -634,7 +628,7 @@
                 grid.className = 'grid grid-cols-2 grid-rows-5 gap-1.5 w-full mt-1';
                 slide.items.forEach(t => {
                     grid.innerHTML += `
-                        <div class="bg-white py-3 px-3 rounded-xl border border-slate-100 shadow-sm font-black text-center text-[11px] md:text-[14px] text-slate-500 uppercase tracking-widest leading-none flex items-center justify-center min-h-[50px]">
+                        <div class="bg-white py-3 px-3 rounded-xl border border-slate-100 shadow-sm font-black text-center text-[11px] md:text-[14px] lg:text-[13px] text-slate-500 uppercase tracking-widest leading-none flex items-center justify-center min-h-[50px]">
                             ${t}
                         </div>`;
                 });
@@ -646,9 +640,9 @@
                 slide.items.forEach(item => {
                     comp.innerHTML += `
                         <div class="grid grid-cols-2 gap-2 md:gap-4">
-                            <div class="flex items-center justify-center p-3 bg-slate-100 text-slate-400 rounded-xl font-semibold italic text-center text-sm md:text-2xl leading-tight">${item.f}</div>
-                            <div class="flex items-center justify-center gap-2 p-3 bg-[#0F172A] text-[#6FEAD1] rounded-xl font-bold shadow-lg text-center text-sm md:text-2xl leading-tight">
-                                <i data-lucide="${item.i}" class="w-5 h-5 md:w-6 md:h-6"></i> <span class="ml-1">${item.t}</span>
+                            <div class="flex items-center justify-center p-3 bg-slate-100 text-slate-400 rounded-xl font-semibold italic text-center text-sm md:text-2xl lg:text-xl leading-tight">${item.f}</div>
+                            <div class="flex items-center justify-center gap-2 p-3 bg-[#0F172A] text-[#6FEAD1] rounded-xl font-bold shadow-lg text-center text-sm md:text-2xl lg:text-xl leading-tight">
+                                <i data-lucide="${item.i}" class="w-5 h-5 md:w-6 md:h-6 lg:w-5 lg:h-5"></i> <span class="ml-1">${item.t}</span>
                             </div>
                         </div>`;
                 });
@@ -656,8 +650,8 @@
             } else if (slide.type === 'problems') {
                 slide.items.forEach(text => {
                     contentArea.innerHTML += `
-                        <div class="flex items-center gap-4 p-3 bg-red-50 text-red-700 rounded-xl font-bold border border-red-100 italic text-sm md:text-2xl w-full">
-                            <i data-lucide="alert-circle" class="w-6 h-6 shrink-0"></i>
+                        <div class="flex items-center gap-4 p-3 bg-red-50 text-red-700 rounded-xl font-bold border border-red-100 italic text-sm md:text-2xl lg:text-xl w-full">
+                            <i data-lucide="alert-circle" class="w-6 h-6 lg:w-5 lg:h-5 shrink-0"></i>
                             <span class="leading-tight">${text}</span>
                         </div>`;
                 });
@@ -665,8 +659,8 @@
                 slide.items.forEach(item => {
                     contentArea.innerHTML += `
                         <div class="bg-white p-4 rounded-xl border-l-[6px] border-[#6FEAD1] shadow-sm w-full text-left">
-                            <div class="font-black text-[#0F172A] text-xs md:text-xl uppercase tracking-widest mb-0.5">${item.s}</div>
-                            <div class="font-semibold text-slate-500 text-sm md:text-2xl leading-snug">${item.r}</div>
+                            <div class="font-black text-[#0F172A] text-xs md:text-xl lg:text-lg uppercase tracking-widest mb-0.5">${item.s}</div>
+                            <div class="font-semibold text-slate-500 text-sm md:text-2xl lg:text-xl leading-snug">${item.r}</div>
                         </div>`;
                 });
             } else if (slide.type === 'table') {
@@ -675,8 +669,8 @@
                 slide.items.forEach(item => {
                     table.innerHTML += `
                         <div class="flex justify-between items-center bg-white p-4 md:p-6 rounded-xl border border-slate-100 shadow-sm">
-                            <span class="font-bold text-slate-700 text-sm md:text-2xl">${item.t}</span>
-                            <span class="text-[#6FEAD1] font-black text-xs md:text-xl uppercase whitespace-nowrap leading-none">${item.d}</span>
+                            <span class="font-bold text-slate-700 text-sm md:text-2xl lg:text-xl">${item.t}</span>
+                            <span class="text-[#6FEAD1] font-black text-xs md:text-xl lg:text-lg uppercase whitespace-nowrap leading-none">${item.d}</span>
                         </div>`;
                 });
                 contentArea.appendChild(table);
@@ -695,15 +689,15 @@
                 slide.items.forEach(item => {
                     contentArea.innerHTML += `
                         <div class="flex items-center bg-white rounded-xl shadow-sm border border-slate-100/50 py-3 px-5 gap-4 w-full">
-                            <i data-lucide="${item.i}" class="w-6 h-6 text-[#6FEAD1] shrink-0"></i>
-                            <span class="font-semibold text-slate-700 leading-tight text-sm md:text-2xl">${item.t}</span>
+                            <i data-lucide="${item.i}" class="w-6 h-6 lg:w-5 lg:h-5 text-[#6FEAD1] shrink-0"></i>
+                            <span class="font-semibold text-slate-700 leading-tight text-sm md:text-2xl lg:text-xl">${item.t}</span>
                         </div>`;
                 });
             }
 
             if (slide.footer && !isHero && !isLast) {
                 contentArea.innerHTML += `
-                    <div class="mt-6 p-4 md:p-7 bg-[#0F172A] rounded-xl font-bold text-sm md:text-2xl text-white shadow-xl self-start border-l-4 border-[#6FEAD1]">
+                    <div class="mt-6 p-4 md:p-7 bg-[#0F172A] rounded-xl font-bold text-sm md:text-2xl lg:text-xl text-white shadow-xl self-start border-l-4 border-[#6FEAD1]">
                         ${slide.footer}
                     </div>`;
             }
