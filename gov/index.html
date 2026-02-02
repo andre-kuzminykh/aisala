@@ -1,699 +1,719 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Cpu, Zap, Landmark, Search, FileText, BarChart, Users, Eye, Target, 
-  AlertCircle, Layers, Database, Plug, Settings, UserCheck, Code, 
-  Terminal, Box, Clock, Tv, GraduationCap, Heart, Shield, ChevronLeft, 
-  ChevronRight, Lock, Globe, TrendingUp, ShieldCheck, Rocket, Layout,
-  Sparkles, ClipboardCheck, Microscope, Smartphone, Lightbulb, PieChart,
-  UserPlus, BookOpen, MessageSquare, ShieldAlert, CheckCircle2, Laptop,
-  UserCog, Brain, Briefcase, Activity, Bot
-} from 'lucide-react';
-
-const STATIC_IMAGE_URL = "https://i.ibb.co/LXWLn6Wc/Chat-GPT-Image-Feb-2-2026-04-07-42-PM.png";
-
-const SLIDES = [
-  {
-    id: 1,
-    type: 'hero',
-    title: <div className="leading-[0.8] font-black uppercase text-[#0F172A] text-left">AI-FIRST<br/><span className="text-[0.7em]">Экономика Казахстана</span></div>,
-    subtitle: <span className="text-[#6FEAD1] font-bold uppercase tracking-tight text-left w-full block">ИИ-трансформация государственного сектора</span>,
-    content: <div className="mt-4 md:mt-6 w-full flex justify-center"><div className="h-1.5 w-32 bg-[#6FEAD1] rounded-full shadow-sm"></div></div>
-  },
-  {
-    id: 2,
-    title: "AI-First Государство",
-    subtitle: "Новая парадигма управления",
-    items: [
-      { icon: Sparkles, t: 'Масштабируемость без роста штата' },
-      { icon: Zap, t: 'Принятие решений в реальном времени' },
-      { icon: ShieldCheck, t: 'Объективность и прозрачность сервисов' }
-    ]
-  },
-  {
-    id: 3,
-    title: "Ключевая идея",
-    subtitle: "Мы строим новую экономику",
-    items: [
-      { icon: Cpu, t: 'ИИ становится новой производительной силой' },
-      { icon: TrendingUp, t: 'Рост эффективности больше не масштабируется людьми' },
-      { icon: Landmark, t: 'Государство — главный драйвер ИИ-трансформации' }
-    ]
-  },
-  {
-    id: 4,
-    title: "Глобальный контекст",
-    subtitle: "AI-First экономики формируются сейчас",
-    items: [
-      { icon: Globe, t: 'ИИ = базовая инфраструктура (как электричество)' },
-      { icon: TrendingUp, t: 'Отставание в ИИ = потеря конкурентоспособности' },
-      { icon: ShieldCheck, t: 'Суверенность невозможна без собственного ИИ' }
-    ]
-  },
-  {
-    id: 5,
-    title: "Почему государство",
-    subtitle: "Государство — архитектор ИИ-экономики",
-    items: [
-      { icon: Settings, t: 'Формирует правила и стандарты' },
-      { icon: Database, t: 'Владеет ключевой инфраструктурой' },
-      { icon: UserPlus, t: 'Выращивает человеческий капитал' },
-      { icon: Rocket, t: 'Масштабирует практики на всю страну' }
-    ]
-  },
-  {
-    id: 6,
-    title: "Проблема сегодня",
-    subtitle: "Цифровизация не даёт эффекта",
-    type: 'problems',
-    items: [
-      'Автоматизация устаревших процессов',
-      'Фрагментированные ИТ-системы',
-      'Нет единой ИИ-стратегии',
-      'Дефицит компетенций',
-      'Пилоты без масштабирования'
-    ]
-  },
-  {
-    id: 7,
-    title: "Целевая модель",
-    subtitle: "AI-First государство",
-    type: 'comparison',
-    items: [
-      { f: 'Ручные процессы', t: 'ИИ-агенты', i: <Bot size={14}/> },
-      { f: 'Разрозненные данные', t: 'ИИ-платформа', i: <Database size={14}/> },
-      { f: 'Перегрузка людей', t: 'Сотрудники + ИИ', i: <UserPlus size={14}/> },
-      { f: 'Медленные решения', t: <div className="leading-tight">Гибридный<br/>интеллект</div>, i: <Cpu size={14}/> }
-    ]
-  },
-  {
-    id: 8,
-    title: "Кто мы",
-    subtitle: <span className="text-[#6FEAD1]">AISALA AI</span>,
-    items: [
-      { icon: Landmark, t: 'ИИ-партнёр Казахстана' },
-      { icon: Globe, t: 'Работаем внутри страны' },
-      { icon: ShieldCheck, t: 'Локализуем данные и модели' },
-      { icon: Cpu, t: 'Строим суверенную ИИ-инфраструктуру' }
-    ],
-    footer: "Данные, модели и управление — в Казахстане"
-  },
-  {
-    id: 9,
-    title: "Институциональная модель",
-    subtitle: "Кто за что отвечает",
-    type: 'roles',
-    items: [
-      { s: 'Государство', r: 'Владелец стратегии, данных и решений' },
-      { s: 'AISALA AI', r: 'Оператор и интегратор систем' },
-      { s: 'ИИ', r: 'Инструмент анализа и исполнения' }
-    ]
-  },
-  {
-    id: 10,
-    title: "Онбординг",
-    subtitle: "Запуск трансформации",
-    items: [
-      { icon: Users, t: 'Установочная встреча с руководством' },
-      { icon: Eye, t: 'Формирование общего понимания ИИ' },
-      { icon: Target, t: 'Совместный выбор целей трансформации' }
-    ],
-    footer: "Результат: единый управленческий фреймворк"
-  },
-  {
-    id: 11,
-    title: "Диагностика",
-    subtitle: "Аудит ИИ-зрелости",
-    items: [
-      { icon: Search, t: 'Анализ ключевых процессов' },
-      { icon: FileText, t: 'Модель AS-IS' },
-      { icon: Layout, t: 'Целевая модель TO-BE' },
-      { icon: BarChart, t: 'Индекс ИИ-зрелости' }
-    ],
-    footer: "Результат: стратегия ИИ-трансформации"
-  },
-  {
-    id: 12,
-    title: "Стратегия",
-    subtitle: "Персональный AI-playbook",
-    items: [
-      { icon: BarChart, t: 'SWOT-анализ и Быстрые победы' },
-      { icon: Target, t: 'Тактические шаги (3–6 месяцев)' },
-      { icon: Rocket, t: 'Стратегические направления' },
-      { icon: TrendingUp, t: 'ROI и экономический эффект' }
-    ],
-    footer: "Для государства — бесплатно"
-  },
-  {
-    id: 13,
-    title: "Быстрые победы",
-    subtitle: "Первые 90 дней",
-    items: [
-      { icon: UserCheck, t: 'ИИ-ассистенты для сотрудников' },
-      { icon: MessageSquare, t: 'ИИ-обработка обращений 24/7' },
-      { icon: Zap, t: 'Автоматизация 1–3 рутинных процессов' }
-    ],
-    footer: "Результат: измеримый эффект и доверие"
-  },
-  {
-    id: 14,
-    title: "ИИ-платформа",
-    subtitle: "Суперагент",
-    items: [
-      { icon: Layers, t: 'Мультимодальные ИИ-модели' },
-      { icon: Database, t: 'Память всего государства' },
-      { icon: Plug, t: 'Интеграции с госсистемами' },
-      { icon: Terminal, t: 'Автоматизация действий' },
-      { icon: Code, t: 'Создание ИИ-приложений' }
-    ]
-  },
-  {
-    id: 15,
-    title: "ИИ-сотрудники",
-    subtitle: "Цифровая рабочая сила",
-    type: 'grid_employees_5x2',
-    items: ['Менеджмент', 'HR', 'SMM', 'Маркетинг', 'Продажи', 'Поддержка', 'Аналитика', 'Дизайн', 'Разработка', 'Инженерия']
-  },
-  {
-    id: 16,
-    title: "Агент-менеджер",
-    subtitle: <span className="text-[#6FEAD1]">ИИ-сотрудник</span>,
-    items: [
-      { icon: Clock, t: 'Ведение календаря и заметок' },
-      { icon: MessageSquare, t: 'Консультации клиентов и сотрудников' },
-      { icon: FileText, t: 'Помощь в подготовке документов' },
-      { icon: Target, t: 'Управление задачами команды' }
-    ]
-  },
-  {
-    id: 17,
-    title: "HR-агент",
-    subtitle: <span className="text-[#6FEAD1]">ИИ-сотрудник</span>,
-    items: [
-      { icon: Search, t: 'Умный поиск кандидатов' },
-      { icon: Users, t: 'Автоматическое собеседование' },
-      { icon: UserCheck, t: 'Онбординг и расписание' },
-      { icon: Heart, t: 'Обучение и поддержка' }
-    ]
-  },
-  {
-    id: 18,
-    title: "SMM-агент",
-    subtitle: <span className="text-[#6FEAD1]">ИИ-сотрудник</span>,
-    items: [
-      { icon: Tv, t: 'Мониторинг новостей и повестки' },
-      { icon: ClipboardCheck, t: 'Подготовка контент-плана' },
-      { icon: Sparkles, t: 'Создание текстового и видео контента' },
-      { icon: MessageSquare, t: 'Анализ обратной связи 24/7' }
-    ]
-  },
-  {
-    id: 19,
-    title: "Консультации",
-    subtitle: "Профессиональная поддержка",
-    type: 'table',
-    items: [
-      { t: 'Стратегическая сессия по ИИ', d: '1 день' },
-      { t: 'Оценка ИИ-автоматизации', d: '30 минут' },
-      { t: 'Управление изменениями', d: '1 час' },
-      { t: 'Исследования в области ИИ', d: 'Заказ' }
-    ]
-  },
-  {
-    id: 20,
-    title: "Обучение",
-    subtitle: "Форматы развития",
-    type: 'table',
-    items: [
-      { t: 'AI Executive Day', d: '1 день' },
-      { t: 'AI Product Hackathon', d: '1 неделю' },
-      { t: 'AI Automation Bootcamp', d: '1 месяц' },
-      { t: 'AI Engineer Program', d: '3 месяца' }
-    ]
-  },
-  {
-    id: 21,
-    title: "AI Executive Day",
-    subtitle: "Обучение",
-    items: [
-      { icon: UserCheck, t: 'Роль руководителя в AI-First' },
-      { icon: Target, t: 'Принятие решений с ИИ' },
-      { icon: AlertCircle, t: 'Управление рисками' },
-      { icon: Sparkles, t: 'Практические кейсы' }
-    ],
-    footer: "Результат: единое понимание ИИ"
-  },
-  {
-    id: 22,
-    title: "AI Automation Bootcamp",
-    subtitle: "Обучение",
-    items: [
-      { icon: Layout, t: 'Моделирование процессов' },
-      { icon: Cpu, t: 'Проектирование ИИ-агентов' },
-      { icon: Database, t: 'Работа с данными' },
-      { icon: TrendingUp, t: 'Измерение финансового эффекта' }
-    ],
-    footer: "Результат: ИИ-агенты в процессах"
-  },
-  {
-    id: 23,
-    title: "AI Product Hackathon",
-    subtitle: "Обучение",
-    items: [
-      { icon: Users, t: 'Проблемы граждан и бизнеса' },
-      { icon: Lightbulb, t: 'Проектирование ИИ-сервисов' },
-      { icon: Zap, t: 'Быстрое прототипирование' },
-      { icon: Search, t: 'Проверка гипотез' }
-    ],
-    footer: "Результат: готовые продукты для граждан"
-  },
-  {
-    id: 24,
-    title: "AI Engineer Program",
-    subtitle: "Обучение",
-    items: [
-      { icon: Layers, t: 'Архитектура ИИ-систем' },
-      { icon: Code, t: 'Обучение и дообучение моделей' },
-      { icon: Terminal, t: 'MLOps / AIOps / DataOps' },
-      { icon: Lock, t: 'Безопасность и контроль' }
-    ],
-    footer: "Результат: внутренние инженеры"
-  },
-  {
-    id: 25,
-    title: "ИИ-таланты",
-    subtitle: "Найм ИИ-талантов для государства",
-    items: [
-      { icon: UserCheck, t: 'AI Executives' },
-      { icon: Code, t: 'AI Engineers' },
-      { icon: Terminal, t: 'AI Automation Engineers' },
-      { icon: Box, t: 'AI Product Engineers' }
-    ]
-  },
-  {
-    id: 26,
-    title: "AI Executives",
-    subtitle: "Автоматизация процессов",
-    items: [
-      { icon: Search, t: 'Анализ и моделирование процессов' },
-      { icon: Target, t: 'Формирование ИИ-стратегии' },
-      { icon: PieChart, t: 'Приоритизация ИИ-проектов' },
-      { icon: TrendingUp, t: 'Контроль внедрения и эффекта' }
-    ]
-  },
-  {
-    id: 27,
-    title: "AI Automation Engineer",
-    subtitle: "Автоматизация процессов",
-    items: [
-      { icon: Layout, t: 'Проектирование процесса с ИИ' },
-      { icon: Cpu, t: 'Дизайн ИИ-агента' },
-      { icon: Zap, t: 'Внедрение ИИ-агента' },
-      { icon: BarChart, t: 'Дашборды AIOps' }
-    ],
-    footer: "Эффект: снимаем −30–70% нагрузки"
-  },
-  {
-    id: 28,
-    title: "AI Product Engineer",
-    subtitle: "Разработка сервисов",
-    items: [
-      { icon: Search, t: 'Исследование проблем граждан' },
-      { icon: Layout, t: 'Проектирование ИИ-сервиса' },
-      { icon: Code, t: 'Разработка ИИ-сервиса' },
-      { icon: BarChart, t: 'BI-аналитика' }
-    ],
-    footer: "Государство как платформа"
-  },
-  {
-    id: 29,
-    title: "AI Engineer",
-    subtitle: "Обучение моделей",
-    items: [
-      { icon: Database, t: 'Подготовка и очистка данных' },
-      { icon: Cpu, t: 'Обучение и дообучение моделей' },
-      { icon: Terminal, t: 'MLOps / AIOps' },
-      { icon: Lock, t: 'Безопасность и аудит' }
-    ],
-    footer: "Суверенные ИИ-технологии"
-  },
-  {
-    id: 30,
-    title: "Экономический эффект",
-    subtitle: "Что получает государство",
-    type: 'table',
-    items: [
-      { t: 'Рутинные операции', d: '−30–70%' },
-      { t: 'Скорость услуг', d: '−40–60%' },
-      { t: 'Упр. решения', d: 'Обоснованные' },
-      { t: 'Кадр. эффективность', d: '−20–30% ФОТ' }
-    ]
-  },
-  {
-    id: 31,
-    title: <span className="whitespace-nowrap uppercase">ИИ-кейсы</span>,
-    subtitle: "Где AI-First даёт эффект",
-    type: 'case_hub',
-    cases: [
-      { i: Shield, n: 'Банки' }, { i: Tv, n: 'Медиа' }, 
-      { i: GraduationCap, n: 'Образование' }, { i: Microscope, n: 'Наука' },
-      { i: Heart, n: 'Медицина' }, { i: MessageSquare, n: 'Услуги' },
-      { i: Smartphone, n: 'Телеком' }, { i: UserCog, n: 'Правительство' }
-    ]
-  },
-  {
-    id: 32,
-    title: "Банки",
-    subtitle: "ИИ-финансовая система",
-    items: [
-      { icon: Shield, t: 'Антифрод и риск-модели' },
-      { icon: PieChart, t: 'Аналитика кредитных программ' },
-      { icon: Lock, t: 'Комплаенс и отчётность' },
-      { icon: TrendingUp, t: 'Макроэкономическая аналитика' }
-    ],
-    footer: "Эффект: устойчивость системы"
-  },
-  {
-    id: 33,
-    title: "Медиа",
-    subtitle: "ИИ-коммуникации государства",
-    items: [
-      { icon: Tv, t: 'Анализ и планирование контента' },
-      { icon: Eye, t: 'Мониторинг общественной повестки' },
-      { icon: ShieldAlert, t: 'Работа с дезинформацией' },
-      { icon: MessageSquare, t: 'Обратная связь с гражданами' }
-    ],
-    footer: "Эффект: доверие и скорость"
-  },
-  {
-    id: 34,
-    title: "Образование",
-    subtitle: "ИИ-система подготовки кадров",
-    items: [
-      { icon: GraduationCap, t: 'Персонализированное обучение' },
-      { icon: Users, t: 'ИИ-ассистенты для преподавателей' },
-      { icon: BarChart, t: 'Аналитика успеваемости' },
-      { icon: Rocket, t: 'Прогноз кадровых потребностей' }
-    ],
-    footer: "Эффект: качество образования"
-  },
-  {
-    id: 35,
-    title: "Наука",
-    subtitle: "ИИ-ускорение исследований",
-    items: [
-      { icon: Microscope, t: 'ИИ-ассистенты исследователей' },
-      { icon: BookOpen, t: 'Анализ публикаций и данных' },
-      { icon: TrendingUp, t: 'Приоритезация научных программ' },
-      { icon: Globe, t: 'Связка науки и экономики' }
-    ],
-    footer: "Эффект: рост продуктивности"
-  },
-  {
-    id: 36,
-    title: "Медицина",
-    subtitle: "ИИ-здравоохранение",
-    items: [
-      { icon: Heart, t: 'Умная маршрутизация пациентов' },
-      { icon: Microscope, t: 'ИИ-поддержка диагностики' },
-      { icon: Database, t: 'Аналитика системы здравоохранения' },
-      { icon: Users, t: 'Управление ресурсами' }
-    ],
-    footer: "Эффект: доступность услуг"
-  },
-  {
-    id: 37,
-    title: "Услуги",
-    subtitle: "ИИ-сервисы для граждан",
-    items: [
-      { icon: MessageSquare, t: 'Обработка обращений 24/7' },
-      { icon: UserCheck, t: 'Персонализация госуслуг' },
-      { icon: Zap, t: 'Снижение сроков и отказов' },
-      { icon: BarChart, t: 'Аналитика качества сервиса' }
-    ],
-    footer: "Эффект: рост удовлетворённости"
-  },
-  {
-    id: 38,
-    title: "Телеком",
-    subtitle: "Цифровая связность страны",
-    items: [
-      { icon: Smartphone, t: 'Управление инфраструктурой' },
-      { icon: BarChart, t: 'Прогноз перегрузок сетей' },
-      { icon: Globe, t: 'База ИИ-экономики' },
-      { icon: Shield, t: 'Контроль качества услуг' }
-    ],
-    footer: "Эффект: надёжная связь"
-  },
-  {
-    id: 39,
-    title: "Правительство",
-    subtitle: "ИИ-ядро государства",
-    items: [
-      { icon: UserCheck, t: 'ИИ-ассистент руководителей' },
-      { icon: ClipboardCheck, t: 'Контроль исполнения поручений' },
-      { icon: Layers, t: 'Межведомственная платформа' },
-      { icon: PieChart, t: 'Аналитика KPI и программ' }
-    ],
-    footer: "Эффект: управляемость и масштабирование"
-  },
-  {
-    id: 40,
-    title: "Суверенность",
-    subtitle: "Безопасность и контроль",
-    items: [
-      { icon: Shield, t: 'Данные остаются в Казахстане' },
-      { icon: Cpu, t: 'On-prem / Локальные модели' },
-      { icon: Lock, t: 'Полный аудит и логирование' },
-      { icon: UserCheck, t: 'Человек всегда ответственен' }
-    ]
-  },
-  {
-    id: 41,
-    title: "Дальнейшие шаги",
-    subtitle: "План на 90 дней",
-    items: [
-      { icon: Search, t: 'Диагностика процессов и ИИ-зрелости' },
-      { icon: Zap, t: 'Внедрение готовых инструментов' },
-      { icon: Settings, t: 'Обучение автоматизации' },
-      { icon: Rocket, t: 'Пилот одного проекта' }
-    ]
-  },
-  {
-    id: 42,
-    type: 'last',
-    title: <div className="leading-[1.1] font-black uppercase text-[#0F172A] text-center w-full block">AI-First государство — <br/><span className="text-[#6FEAD1] block mt-4 md:mt-8">основа новой экономики</span></div>,
-    subtitle: <div className="text-center w-full block text-slate-400 font-bold uppercase tracking-widest text-lg md:text-3xl mt-12 md:mt-16">Будущее начинается сегодня</div>,
-    items: [
-      { icon: TrendingUp, t: 'Новая производительность' },
-      { icon: Target, t: 'Новое качество управления' },
-      { icon: Users, t: 'Новые кадры и культура' },
-      { icon: ShieldCheck, t: 'Технологический суверенитет' }
-    ],
-    footer: ""
-  }
-];
-
-export default function App() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [direction, setDirection] = useState(0);
-
-  const goToSlide = (newIdx) => {
-    if (newIdx >= 0 && newIdx < SLIDES.length) {
-      setDirection(newIdx > currentSlide ? 1 : -1);
-      setCurrentSlide(newIdx);
-    }
-  };
-
-  const slide = SLIDES[currentSlide];
-  const isHero = slide.id === 1;
-  const isLast = slide.type === 'last';
-  const isSpecial = isHero || isLast;
-
-  return (
-    <div className="fixed inset-0 bg-[#F8FAFC] text-[#0F172A] font-sans overflow-hidden select-none flex flex-col lg:flex-row">
-      
-      {/* Header Logo */}
-      <div className="absolute top-5 left-6 md:top-10 md:left-10 z-[300] flex items-center gap-2">
-        <div className="w-5 h-5 bg-[#6FEAD1] rounded-full shadow-sm" />
-        <span className="font-black text-xl md:text-3xl tracking-tighter uppercase leading-none">AISALA AI</span>
-      </div>
-
-      {/* Navigation arrows - SMALLER */}
-      <div className="absolute inset-y-0 left-0 w-12 md:w-16 z-[350] flex items-center justify-center pointer-events-none">
-        <button onClick={() => goToSlide(currentSlide - 1)} className={`p-2 transition-all active:scale-90 pointer-events-auto ${currentSlide === 0 ? 'opacity-0' : 'opacity-20 hover:opacity-100 text-[#0F172A]'}`}>
-          <ChevronLeft size={isSpecial ? 56 : 36} strokeWidth={2.5} />
-        </button>
-      </div>
-      <div className="absolute inset-y-0 right-0 w-12 md:w-16 z-[350] flex items-center justify-center pointer-events-none">
-        <button onClick={() => goToSlide(currentSlide + 1)} className={`p-2 transition-all active:scale-90 pointer-events-auto ${currentSlide === SLIDES.length - 1 ? 'opacity-0' : 'opacity-20 hover:opacity-100 text-[#0F172A]'}`}>
-          <ChevronRight size={isSpecial ? 56 : 36} strokeWidth={2.5} />
-        </button>
-      </div>
-
-      {/* FLOATING AVATAR CIRCLE - ALWAYS ON TOP FOR MOBILE */}
-      <div className="lg:hidden fixed bottom-10 right-10 z-[999] pointer-events-none">
-        <div className="w-[18vh] h-[18vh] max-w-[150px] max-h-[150px] rounded-full overflow-hidden bg-[#6FEAD1] shadow-2xl">
-          <img src={STATIC_IMAGE_URL} className="w-full h-full object-cover" style={{ objectPosition: 'center 8%' }} alt="Avatar Circle"/>
-        </div>
-      </div>
-
-      {/* STATIC BACKGROUND IMAGE (DESKTOP) */}
-      <div className="absolute inset-y-0 right-0 w-full lg:w-[45%] z-10 pointer-events-none overflow-hidden">
-        <div className="w-full h-full relative overflow-hidden bg-[#F8FAFC] flex items-end lg:items-center">
-            <img src={STATIC_IMAGE_URL} className="w-full h-full object-cover brightness-[1.03] hidden lg:block" style={{ objectPosition: 'center 15%' }} alt="Background Person" />
-        </div>
-      </div>
-
-      {/* ANIMATED CONTENT SLIDER */}
-      <main className="flex-1 flex flex-col lg:flex-row h-full w-full relative z-20 overflow-hidden">
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div 
-            key={currentSlide} 
-            initial={{ opacity: 0, x: direction * 50 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            exit={{ opacity: 0, x: direction * -50 }} 
-            transition={{ duration: 0.35, ease: "easeInOut" }} 
-            className="flex flex-col lg:flex-row h-full w-full relative"
-          >
-            {/* TEXT ZONE */}
-            <div className={`
-                flex-1 flex flex-col px-10 md:px-16 lg:px-24 relative overflow-hidden 
-                ${isSpecial ? 'h-full justify-center lg:items-center' : 'h-full pt-24 justify-center items-start lg:h-full lg:pt-0'}
-            `}>
-              <div className={`max-w-3xl w-full flex flex-col ${isLast ? 'text-center items-center' : 'items-start'}`}>
-                
-                {/* Titles */}
-                <h1 className={`font-black uppercase leading-[0.92] tracking-tight mb-1 md:mb-3 
-                    ${isLast ? 'text-[clamp(1.6rem,6vh,3rem)] md:mb-2' : isHero ? 'text-[clamp(2.6rem,10.5vh,6rem)]' : 'text-[clamp(1.25rem,4.2vh,2.5rem)]'}
-                `}>
-                  {slide.title}
-                </h1>
-                
-                <h2 className={`font-bold uppercase tracking-tight mb-3 md:mb-5
-                    ${isLast ? 'mt-0 mb-8 md:mb-16' : isHero ? 'text-[clamp(1.1rem,3.2vh,2.3rem)]' : 'text-[clamp(0.8rem,2vh,1.2rem)] text-[#6FEAD1]'}
-                    ${slide.id === 1 ? 'text-[#6FEAD1]' : ''}
-                `}>
-                  {slide.subtitle}
-                </h2>
-
-                <div className={`w-full overflow-y-visible pr-2 
-                    ${isSpecial ? 'flex flex-col items-center space-y-4 md:space-y-6' : 'space-y-1 md:space-y-2.5'}
-                    ${isHero ? 'items-start' : ''}
-                `}>
-                  {slide.content}
-
-                  {/* Industry Hub Grid (30) */}
-                  {slide.type === 'case_hub' && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 w-full mt-2">
-                        {slide.cases.map((c, i) => (
-                            <div key={i} className="bg-white p-3 md:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center gap-2">
-                                <c.i size={24} className="text-[#6FEAD1]"/>
-                                <span className="font-bold text-slate-700 text-[9px] md:text-xs text-center uppercase tracking-wider leading-none">{c.n}</span>
-                            </div>
-                        ))}
-                    </div>
-                  )}
-
-                  {/* Employee Grid (14): 5 rows of 2 */}
-                  {slide.type === 'grid_employees_5x2' && (
-                    <div className="grid grid-cols-2 grid-rows-5 gap-1.5 w-full mt-1">
-                        {slide.items.map((t, i) => (
-                            <div key={i} className="bg-white py-2 px-3 rounded-xl border border-slate-100 shadow-sm font-black text-center text-[9px] md:text-[11px] text-slate-500 uppercase tracking-widest leading-none flex items-center justify-center min-h-[45px]">
-                                {t}
-                            </div>
-                        ))}
-                    </div>
-                  )}
-                  
-                  {/* Standard Item Blocks */}
-                  {!isSpecial && slide.items && !['problems', 'comparison', 'roles', 'grid_employees_5x2', 'table', 'case_hub'].includes(slide.type) && slide.items.map((item, i) => (
-                    <div key={i} className="flex items-center bg-white rounded-xl shadow-sm border border-slate-100/50 py-2.5 px-5 gap-4">
-                      <item.icon size={18} className="text-[#6FEAD1] shrink-0" />
-                      <span className="font-semibold text-slate-700 leading-tight text-xs md:text-xl">{item.t}</span>
-                    </div>
-                  ))}
-
-                  {/* Problems Blocks */}
-                  {slide.type === 'problems' && slide.items.map((text, i) => (
-                    <div key={i} className="flex items-center gap-3 p-2.5 bg-red-50 text-red-700 rounded-xl font-bold border border-red-100 italic text-[0.75rem] md:text-lg w-full">
-                      <AlertCircle size={16} className="shrink-0" />
-                      <span className="leading-tight">{text}</span>
-                    </div>
-                  ))}
-
-                  {/* Institutional Roles (Slide 9) */}
-                  {slide.type === 'roles' && slide.items.map((item, i) => (
-                    <div key={i} className="bg-white p-3.5 rounded-xl border-l-[6px] border-[#6FEAD1] shadow-sm w-full">
-                        <div className="font-black text-[#0F172A] text-[9px] md:text-base uppercase tracking-widest mb-0.5">{item.s}</div>
-                        <div className="font-semibold text-slate-500 text-[10px] md:text-xl leading-snug">{item.r}</div>
-                    </div>
-                  ))}
-
-                  {/* Comparison Logic */}
-                  {slide.type === 'comparison' && (
-                    <div className="space-y-1.5 md:space-y-4 w-full mt-2">
-                      <div className="grid grid-cols-2 gap-4 text-[0.5rem] md:text-sm uppercase tracking-widest font-black text-slate-400 px-1 text-center">
-                        <span>Было</span><span>Становится</span>
-                      </div>
-                      {slide.items.map((item, i) => (
-                        <div key={i} className="grid grid-cols-2 gap-2 md:gap-4">
-                          <div className={`flex items-center justify-center p-2 bg-slate-100 text-slate-400 rounded-xl font-semibold italic text-center text-[10px] md:text-lg leading-tight`}>
-                            {item.f}
-                          </div>
-                          <div className={`flex items-center justify-center gap-2 p-2 bg-[#0F172A] text-[#6FEAD1] rounded-xl font-bold shadow-lg text-center text-[10px] md:text-lg leading-tight`}>
-                            {item.i} <span className="ml-1">{(typeof item.t === 'string') ? item.t : item.t}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Tables Style */}
-                  {slide.type === 'table' && (
-                    <div className="w-full space-y-1.5 md:space-y-2 mt-2">
-                        {slide.items.map((item, i) => (
-                            <div key={i} className="flex justify-between items-center bg-white p-3 md:p-6 rounded-xl border border-slate-100 shadow-sm">
-                                <span className="font-bold text-slate-700 text-[10px] md:text-xl">{item.t}</span>
-                                <span className="text-[#6FEAD1] font-black text-[10px] md:text-lg uppercase whitespace-nowrap leading-none">{item.d}</span>
-                            </div>
-                        ))}
-                    </div>
-                  )}
-
-                  {/* Final Slide Badge Bubbles - NO CLIPPING & COMPACT FONT */}
-                  {isLast && (
-                    <div className="flex flex-wrap justify-center gap-2.5 mt-2 max-w-xl overflow-visible pb-10">
-                        {slide.items.map((item, i) => (
-                            <div key={i} className="flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-full shadow-lg border border-slate-50 whitespace-nowrap">
-                                <item.icon size={14} className="text-[#6FEAD1] shrink-0"/>
-                                <span className="font-black text-slate-400 uppercase tracking-widest text-[8px] md:text-[9px] leading-none">{item.t}</span>
-                            </div>
-                        ))}
-                    </div>
-                  )}
-
-                  {/* Strategic Label Footers (Internal Only) */}
-                  {slide.footer && !isSpecial && (
-                    <div className="mt-4 p-3 md:p-6 bg-[#0F172A] rounded-xl font-bold text-[10px] md:text-xl text-white shadow-xl self-start border-l-4 border-[#6FEAD1]">
-                      {slide.footer}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Empty Spacer for Desktop Fixed Background Logic */}
-            <div className="hidden lg:block lg:flex-1 lg:w-[45%] relative" />
-
-          </motion.div>
-        </AnimatePresence>
-      </main>
-
-      <style dangerouslySetInnerHTML={{ __html: `
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-First Казахстан Презентация</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}} />
+        
+        .slide-enter { opacity: 0; transform: translateX(20px); transition: all 0.3s ease-out; }
+        .slide-active { opacity: 1; transform: translateX(0); }
+        
+        #avatar-mobile { z-index: 999; }
+        
+        /* Фиксированная картинка справа для десктопа */
+        #fixed-bg-image {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 45%;
+            height: 100%;
+            background-image: url('https://i.ibb.co/LXWLn6Wc/Chat-GPT-Image-Feb-2-2026-04-07-42-PM.png');
+            background-size: cover;
+            background-position: center 15%;
+            filter: brightness(1.03);
+            z-index: 10;
+        }
+
+        @media (max-width: 1024px) {
+            #fixed-bg-image { display: none; }
+            #content-wrapper { width: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] text-[#0F172A] overflow-hidden select-none">
+
+    <!-- Header Logo -->
+    <div class="absolute top-5 left-6 md:top-10 md:left-10 z-[300] flex items-center gap-2">
+        <div class="w-5 h-5 bg-[#6FEAD1] rounded-full shadow-sm"></div>
+        <span class="font-black text-xl md:text-3xl tracking-tighter uppercase leading-none">AISALA AI</span>
     </div>
-  );
-}
+
+    <!-- Navigation Arrows -->
+    <button id="prev-btn" class="fixed left-0 inset-y-0 w-12 md:w-16 z-[350] flex items-center justify-center text-[#0F172A] opacity-20 hover:opacity-100 transition-opacity">
+        <i data-lucide="chevron-left" class="w-10 h-10 md:w-12 md:h-12"></i>
+    </button>
+    <button id="next-btn" class="fixed right-0 inset-y-0 w-12 md:w-16 z-[350] flex items-center justify-center text-[#0F172A] opacity-20 hover:opacity-100 transition-opacity">
+        <i data-lucide="chevron-right" class="w-10 h-10 md:w-12 md:h-12"></i>
+    </button>
+
+    <!-- Mobile Floating Avatar -->
+    <div id="avatar-mobile" class="lg:hidden fixed bottom-10 right-10 pointer-events-none">
+        <div class="w-[18vh] h-[18vh] max-w-[150px] max-h-[150px] rounded-full overflow-hidden bg-[#6FEAD1] shadow-2xl">
+            <img src="https://i.ibb.co/LXWLn6Wc/Chat-GPT-Image-Feb-2-2026-04-07-42-PM.png" class="w-full h-full object-cover" style="object-position: center 8%;" alt="Avatar">
+        </div>
+    </div>
+
+    <!-- Desktop Background -->
+    <div id="fixed-bg-image" class="hidden lg:block"></div>
+
+    <!-- Main Content Wrapper -->
+    <main id="slide-container" class="relative z-20 h-screen w-full lg:w-[55%] flex flex-col justify-center px-10 md:px-16 lg:px-24">
+        <!-- Слайд будет вставлен сюда через JS -->
+    </main>
+
+    <script>
+        const slides = [
+            {
+                id: 1,
+                title: `<div class="leading-[0.8] font-black uppercase text-left">AI-FIRST<br/><span class="text-[0.7em]">Экономика Казахстана</span></div>`,
+                subtitle: `ИИ-трансформация государственного сектора`,
+                isHero: true,
+                content: `<div class="mt-4 md:mt-6 w-full flex justify-center"><div class="h-1.5 w-32 bg-[#6FEAD1] rounded-full shadow-sm"></div></div>`
+            },
+            {
+                id: 2,
+                title: "AI-First Государство",
+                subtitle: "Новая парадигма управления",
+                items: [
+                    { i: "sparkles", t: "Масштабируемость без роста штата" },
+                    { i: "zap", t: "Принятие решений в реальном времени" },
+                    { i: "shield-check", t: "Объективность и прозрачность сервисов" }
+                ]
+            },
+            {
+                id: 3,
+                title: "Ключевая идея",
+                subtitle: "Мы строим новую экономику",
+                items: [
+                    { i: "cpu", t: "ИИ становится новой производительной силой" },
+                    { i: "trending-up", t: "Рост эффективности больше не масштабируется людьми" },
+                    { i: "landmark", t: "Государство — главный драйвер ИИ-трансформации" }
+                ]
+            },
+            {
+                id: 4,
+                title: "Глобальный контекст",
+                subtitle: "AI-First экономики формируются сейчас",
+                items: [
+                    { i: "globe", t: "ИИ = базовая инфраструктура (как электричество)" },
+                    { i: "trending-up", t: "Отставание в ИИ = потеря конкурентоспособности" },
+                    { i: "shield-check", t: "Суверенность невозможна без собственного ИИ" }
+                ]
+            },
+            {
+                id: 5,
+                title: "Почему государство",
+                subtitle: "Государство — архитектор ИИ-экономики",
+                items: [
+                    { i: "settings", t: "Формирует правила и стандарты" },
+                    { i: "database", t: "Владеет ключевой инфраструктурой" },
+                    { i: "user-plus", t: "Выращивает человеческий капитал" },
+                    { i: "rocket", t: "Масштабирует практики на всю страну" }
+                ]
+            },
+            {
+                id: 6,
+                title: "Проблема сегодня",
+                subtitle: "Цифровизация не даёт эффекта",
+                type: "problems",
+                items: [
+                    "Автоматизация устаревших процессов",
+                    "Фрагментированные ИТ-системы",
+                    "Нет единой ИИ-стратегии",
+                    "Дефицит компетенций",
+                    "Пилоты без масштабирования"
+                ]
+            },
+            {
+                id: 7,
+                title: "Целевая модель",
+                subtitle: "AI-First государство",
+                type: "comparison",
+                items: [
+                    { f: "Ручные процессы", t: "ИИ-агенты", i: "bot" },
+                    { f: "Разрозненные данные", t: "ИИ-платформа", i: "database" },
+                    { f: "Перегрузка людей", t: "Сотрудники + ИИ", i: "user-plus" },
+                    { f: "Медленные решения", t: "Гибридный интеллект", i: "cpu" }
+                ]
+            },
+            {
+                id: 8,
+                title: "Кто мы",
+                subtitle: "AISALA AI",
+                items: [
+                    { i: "landmark", t: "ИИ-партнёр Казахстана" },
+                    { i: "globe", t: "Работаем внутри страны" },
+                    { i: "shield-check", t: "Локализуем данные и модели" },
+                    { i: "cpu", t: "Строим суверенную ИИ-инфраструктуру" }
+                ],
+                footer: "Данные, модели и управление — в Казахстане"
+            },
+            {
+                id: 9,
+                title: "Институциональная модель",
+                subtitle: "Кто за что отвечает",
+                type: "roles",
+                items: [
+                    { s: "Государство", r: "Владелец стратегии, данных и решений" },
+                    { s: "AISALA AI", r: "Оператор и интегратор систем" },
+                    { s: "ИИ", r: "Инструмент анализа и исполнения" }
+                ]
+            },
+            {
+                id: 10,
+                title: "Онбординг",
+                subtitle: "Запуск трансформации",
+                items: [
+                    { i: "users", t: "Установочная встреча с руководством" },
+                    { i: "eye", t: "Формирование общего понимания ИИ" },
+                    { i: "target", t: "Совместный выбор целей трансформации" }
+                ],
+                footer: "Результат: единый управленческий фреймворк"
+            },
+            {
+                id: 11,
+                title: "Диагностика",
+                subtitle: "Аудит ИИ-зрелости",
+                items: [
+                    { i: "search", t: "Анализ ключевых процессов" },
+                    { i: "file-text", t: "Модель AS-IS" },
+                    { i: "layout", t: "Целевая модель TO-BE" },
+                    { i: "bar-chart", t: "Индекс ИИ-зрелости" }
+                ],
+                footer: "Результат: стратегия ИИ-трансформации"
+            },
+            {
+                id: 12,
+                title: "Стратегия",
+                subtitle: "Персональный AI-playbook",
+                items: [
+                    { i: "bar-chart", t: "SWOT-анализ и Быстрые победы" },
+                    { i: "target", t: "Тактические шаги (3–6 месяцев)" },
+                    { i: "rocket", t: "Стратегические направления" },
+                    { i: "trending-up", t: "ROI и экономический эффект" }
+                ],
+                footer: "Для государства — бесплатно"
+            },
+            {
+                id: 13,
+                title: "Быстрые победы",
+                subtitle: "Первые 90 дней",
+                items: [
+                    { i: "user-check", t: "ИИ-ассистенты для сотрудников" },
+                    { i: "message-square", t: "ИИ-обработка обращений 24/7" },
+                    { i: "zap", t: "Автоматизация 1–3 рутинных процессов" }
+                ],
+                footer: "Результат: измеримый эффект и доверие"
+            },
+            {
+                id: 14,
+                title: "ИИ-платформа",
+                subtitle: "Суперагент",
+                items: [
+                    { i: "layers", t: "Мультимодальные ИИ-модели" },
+                    { i: "database", t: "Память всего государства" },
+                    { i: "plug", t: "Интеграции с госсистемами" },
+                    { i: "terminal", t: "Автоматизация действий" },
+                    { i: "code-2", t: "Создание ИИ-приложений" }
+                ]
+            },
+            {
+                id: 15,
+                title: "ИИ-сотрудники",
+                subtitle: "Цифровая рабочая сила",
+                type: "grid_employees_5x2",
+                items: ["Менеджмент", "HR", "SMM", "Маркетинг", "Продажи", "Поддержка", "Аналитика", "Дизайн", "Разработка", "Инженерия"]
+            },
+            {
+                id: 16,
+                title: "Агент-менеджер",
+                subtitle: "ИИ-сотрудник",
+                items: [
+                    { i: "clock", t: "Ведение календаря и заметок" },
+                    { i: "message-square", t: "Консультации клиентов и сотрудников" },
+                    { i: "file-text", t: "Помощь в подготовке документов" },
+                    { i: "target", t: "Управление задачами команды" }
+                ]
+            },
+            {
+                id: 17,
+                title: "HR-агент",
+                subtitle: "ИИ-сотрудник",
+                items: [
+                    { i: "search", t: "Умный поиск кандидатов" },
+                    { i: "users", t: "Автоматическое собеседование" },
+                    { i: "user-check", t: "Онбординг и расписание" },
+                    { i: "heart", t: "Обучение и поддержка" }
+                ]
+            },
+            {
+                id: 18,
+                title: "SMM-агент",
+                subtitle: "ИИ-сотрудник",
+                items: [
+                    { i: "tv", t: "Мониторинг новостей и повестки" },
+                    { i: "clipboard-check", t: "Подготовка контент-плана" },
+                    { i: "sparkles", t: "Создание текстового и видео контента" },
+                    { i: "message-square", t: "Анализ обратной связи 24/7" }
+                ]
+            },
+            {
+                id: 19,
+                title: "Консультации",
+                subtitle: "Профессиональная поддержка",
+                type: "table",
+                items: [
+                    { t: "Стратегическая сессия по ИИ", d: "1 день" },
+                    { t: "Оценка ИИ-автоматизации", d: "30 минут" },
+                    { t: "Управление изменениями", d: "1 час" },
+                    { t: "Исследования в области ИИ", d: "Заказ" }
+                ]
+            },
+            {
+                id: 20,
+                title: "Обучение",
+                subtitle: "Форматы развития",
+                type: "table",
+                items: [
+                    { t: "AI Executive Day", d: "1 день" },
+                    { t: "AI Product Hackathon", d: "1 неделю" },
+                    { t: "AI Automation Bootcamp", d: "1 месяц" },
+                    { t: "AI Engineer Program", d: "3 месяца" }
+                ]
+            },
+            {
+                id: 21,
+                title: "AI Executive Day",
+                subtitle: "Обучение",
+                items: [
+                    { i: "user-check", t: "Роль руководителя в AI-First" },
+                    { i: "target", t: "Принятие решений с ИИ" },
+                    { i: "alert-circle", t: "Управление рисками" },
+                    { i: "sparkles", t: "Практические кейсы" }
+                ],
+                footer: "Результат: единое понимание ИИ"
+            },
+            {
+                id: 22,
+                title: "AI Automation Bootcamp",
+                subtitle: "Обучение",
+                items: [
+                    { i: "layout", t: "Моделирование процессов" },
+                    { i: "cpu", t: "Проектирование ИИ-агентов" },
+                    { i: "database", t: "Работа с данными" },
+                    { i: "trending-up", t: "Измерение финансового эффекта" }
+                ],
+                footer: "Результат: ИИ-агенты в процессах"
+            },
+            {
+                id: 23,
+                title: "AI Product Hackathon",
+                subtitle: "Обучение",
+                items: [
+                    { i: "users", t: "Проблемы граждан и бизнеса" },
+                    { i: "lightbulb", t: "Проектирование ИИ-сервисов" },
+                    { i: "zap", t: "Быстрое прототипирование" },
+                    { i: "search", t: "Проверка гипотез" }
+                ],
+                footer: "Результат: готовые продукты для граждан"
+            },
+            {
+                id: 24,
+                title: "AI Engineer Program",
+                subtitle: "Обучение",
+                items: [
+                    { i: "layers", t: "Архитектура ИИ-систем" },
+                    { i: "code-2", t: "Обучение и дообучение моделей" },
+                    { i: "terminal", t: "MLOps / AIOps / DataOps" },
+                    { i: "lock", t: "Безопасность и контроль" }
+                ],
+                footer: "Результат: внутренние инженеры"
+            },
+            {
+                id: 25,
+                title: "ИИ-таланты",
+                subtitle: "Найм ИИ-талантов для государства",
+                items: [
+                    { i: "user-check", t: "AI Executives" },
+                    { i: "code-2", t: "AI Engineers" },
+                    { i: "terminal", t: "AI Automation Engineers" },
+                    { i: "box", t: "AI Product Engineers" }
+                ]
+            },
+            {
+                id: 26,
+                title: "AI Executives",
+                subtitle: "Автоматизация процессов",
+                items: [
+                    { i: "search", t: "Анализ и моделирование процессов" },
+                    { i: "target", t: "Формирование ИИ-стратегии" },
+                    { i: "pie-chart", t: "Приоритизация ИИ-проектов" },
+                    { i: "trending-up", t: "Контроль внедрения и эффекта" }
+                ]
+            },
+            {
+                id: 27,
+                title: "AI Automation Engineer",
+                subtitle: "Автоматизация процессов",
+                items: [
+                    { i: "layout", t: "Проектирование процесса с ИИ" },
+                    { i: "cpu", t: "Дизайн ИИ-агента" },
+                    { i: "zap", t: "Внедрение ИИ-агента" },
+                    { i: "bar-chart-3", t: "Дашборды AIOps" }
+                ],
+                footer: "Эффект: снимаем −30–70% нагрузки"
+            },
+            {
+                id: 28,
+                title: "AI Product Engineer",
+                subtitle: "Разработка сервисов",
+                items: [
+                    { i: "search", t: "Исследование проблем граждан" },
+                    { i: "layout", t: "Проектирование ИИ-сервиса" },
+                    { i: "code-2", t: "Разработка ИИ-сервиса" },
+                    { i: "bar-chart-3", t: "BI-аналитика" }
+                ],
+                footer: "Государство как платформа"
+            },
+            {
+                id: 29,
+                title: "AI Engineer",
+                subtitle: "Обучение моделей",
+                items: [
+                    { i: "database", t: "Подготовка и очистка данных" },
+                    { i: "cpu", t: "Обучение и дообучение моделей" },
+                    { i: "terminal", t: "MLOps / AIOps" },
+                    { i: "lock", t: "Безопасность и аудит" }
+                ],
+                footer: "Суверенные ИИ-технологии"
+            },
+            {
+                id: 30,
+                title: "Экономический эффект",
+                subtitle: "Что получает государство",
+                type: "table",
+                items: [
+                    { t: "Рутинные операции", d: "−30–70%" },
+                    { t: "Скорость услуг", d: "−40–60%" },
+                    { t: "Упр. решения", d: "Обоснованные" },
+                    { t: "Кадр. эффективность", d: "−20–30% ФОТ" }
+                ]
+            },
+            {
+                id: 31,
+                title: "ИИ-кейсы",
+                subtitle: "Где AI-First даёт эффект",
+                type: "case_hub",
+                cases: [
+                    { i: "shield", n: "Банки" }, { i: "tv", n: "Медиа" }, 
+                    { i: "graduation-cap", n: "Образование" }, { i: "microscope", n: "Наука" },
+                    { i: "heart", n: "Медицина" }, { i: "message-square", n: "Услуги" },
+                    { i: "smartphone", n: "Телеком" }, { i: "user-cog", n: "Правительство" }
+                ]
+            },
+            {
+                id: 32,
+                title: "Банки",
+                subtitle: "ИИ-финансовая система",
+                items: [
+                    { i: "shield", t: "Антифрод и риск-модели" },
+                    { i: "pie-chart", t: "Аналитика кредитных программ" },
+                    { i: "lock", t: "Комплаенс и отчётность" },
+                    { i: "trending-up", t: "Макроэкономическая аналитика" }
+                ],
+                footer: "Эффект: устойчивость системы"
+            },
+            {
+                id: 33,
+                title: "Медиа",
+                subtitle: "ИИ-коммуникации государства",
+                items: [
+                    { i: "tv", t: "Анализ и планирование контента" },
+                    { i: "eye", t: "Мониторинг общественной повестки" },
+                    { i: "shield-alert", t: "Работа с дезинформацией" },
+                    { i: "message-square", t: "Обратная связь с гражданами" }
+                ],
+                footer: "Эффект: доверие и скорость"
+            },
+            {
+                id: 34,
+                title: "Образование",
+                subtitle: "ИИ-система подготовки кадров",
+                items: [
+                    { i: "graduation-cap", t: "Персонализированное обучение" },
+                    { i: "users", t: "ИИ-ассистенты для преподавателей" },
+                    { i: "bar-chart-3", t: "Аналитика успеваемости" },
+                    { i: "rocket", t: "Прогноз кадровых потребностей" }
+                ],
+                footer: "Эффект: качество образования"
+            },
+            {
+                id: 35,
+                title: "Наука",
+                subtitle: "ИИ-ускорение исследований",
+                items: [
+                    { i: "microscope", t: "ИИ-ассистенты исследователей" },
+                    { i: "book-open", t: "Анализ публикаций и данных" },
+                    { i: "trending-up", t: "Приоритезация научных программ" },
+                    { i: "globe", t: "Связка науки и экономики" }
+                ],
+                footer: "Эффект: рост продуктивности"
+            },
+            {
+                id: 36,
+                title: "Медицина",
+                subtitle: "ИИ-здравоохранение",
+                items: [
+                    { i: "heart", t: "Умная маршрутизация пациентов" },
+                    { i: "microscope", t: "ИИ-поддержка диагностики" },
+                    { i: "database", t: "Аналитика системы здравоохранения" },
+                    { i: "users", t: "Управление ресурсами" }
+                ],
+                footer: "Эффект: доступность услуг"
+            },
+            {
+                id: 37,
+                title: "Услуги",
+                subtitle: "ИИ-сервисы для гражданам",
+                items: [
+                    { i: "message-square", t: "Обработка обращений 24/7" },
+                    { i: "user-check", t: "Персонализация госуслуг" },
+                    { i: "zap", t: "Снижение сроков и отказов" },
+                    { i: "bar-chart-3", t: "Аналитика качества сервиса" }
+                ],
+                footer: "Эффект: рост удовлетворённости"
+            },
+            {
+                id: 38,
+                title: "Телеком",
+                subtitle: "Цифровая связность страны",
+                items: [
+                    { i: "smartphone", t: "Управление инфраструктурой" },
+                    { i: "bar-chart-3", t: "Прогноз перегрузок сетей" },
+                    { i: "globe", t: "База ИИ-экономики" },
+                    { i: "shield", t: "Контроль качества услуг" }
+                ],
+                footer: "Эффект: надёжная связь"
+            },
+            {
+                id: 39,
+                title: "Правительство",
+                subtitle: "ИИ-ядро государства",
+                items: [
+                    { i: "user-check", t: "ИИ-ассистент руководителей" },
+                    { i: "clipboard-check", t: "Контроль исполнения поручений" },
+                    { i: "layers", t: "Межведомственная платформа" },
+                    { i: "pie-chart", t: "Аналитика KPI и программ" }
+                ],
+                footer: "Эффект: управляемость и масштабирование"
+            },
+            {
+                id: 40,
+                title: "Суверенность",
+                subtitle: "Безопасность и контроль",
+                items: [
+                    { i: "shield", t: "Данные остаются в Казахстане" },
+                    { i: "cpu", t: "On-prem / Локальные модели" },
+                    { i: "lock", t: "Полный аудит и логирование" },
+                    { i: "user-check", t: "Человек всегда ответственен" }
+                ]
+            },
+            {
+                id: 41,
+                title: "Дальнейшие шаги",
+                subtitle: "План на 90 дней",
+                items: [
+                    { i: "search", t: "Диагностика процессов и ИИ-зрелости" },
+                    { i: "zap", t: "Внедрение готовых инструментов" },
+                    { i: "settings", t: "Обучение автоматизации" },
+                    { i: "rocket", t: "Пилот одного проекта" }
+                ]
+            },
+            {
+                id: 42,
+                type: "last",
+                title: `<div class="leading-[1.1] font-black uppercase text-center w-full block"><span class="block mb-4 md:mb-8">AI-First государство —</span><span class="text-[#6FEAD1]">основа новой экономики</span></div>`,
+                subtitle: `<div class="text-center w-full block text-slate-400 font-bold uppercase tracking-widest text-lg md:text-3xl mt-4 md:mt-8">Будущее начинается сегодня</div>`,
+                items: [
+                    { i: "trending-up", t: "Новая производительность" },
+                    { i: "target", t: "Новое качество управления" },
+                    { i: "users", t: "Новые кадры и культура" },
+                    { i: "shield-check", t: "Технологический суверенитет" }
+                ]
+            }
+        ];
+
+        let currentSlideIndex = 0;
+
+        function renderSlide() {
+            const slide = slides[currentSlideIndex];
+            const isHero = currentSlideIndex === 0;
+            const isLast = slide.type === 'last';
+            const isSpecial = isHero || isLast;
+            const container = document.getElementById('slide-container');
+
+            // Очищаем контейнер
+            container.innerHTML = '';
+            
+            // Основная обертка контента
+            const wrapper = document.createElement('div');
+            wrapper.className = `max-w-3xl w-full flex flex-col ${isLast ? 'items-center text-center' : 'items-start text-left'} slide-enter`;
+            
+            // Заголовок
+            const title = document.createElement('h1');
+            title.className = `font-black uppercase leading-[0.92] tracking-tight mb-1 md:mb-3 
+                ${isLast ? 'text-[clamp(1.6rem,6vh,3rem)] md:mb-2' : isHero ? 'text-[clamp(2.6rem,10.5vh,6rem)]' : 'text-[clamp(1.25rem,4.2vh,2.5rem)]'}`;
+            title.innerHTML = slide.title;
+            wrapper.appendChild(title);
+
+            // Подзаголовок
+            const subtitle = document.createElement('h2');
+            subtitle.className = `font-bold uppercase tracking-tight mb-3 md:mb-5
+                ${isLast ? 'mt-0' : isHero ? 'text-[clamp(1.1rem,3.2vh,2.3rem)]' : 'text-[clamp(0.8rem,2vh,1.2rem)] text-[#6FEAD1]'}
+                ${isHero ? 'text-[#6FEAD1]' : ''}`;
+            subtitle.innerHTML = slide.subtitle;
+            wrapper.appendChild(subtitle);
+
+            // Сетка/Списки
+            const contentArea = document.createElement('div');
+            contentArea.className = `w-full overflow-y-visible pr-2 ${isSpecial ? 'flex flex-col items-center space-y-4 md:space-y-6' : 'space-y-1 md:space-y-2.5'}`;
+            
+            // Добавляем специфический контент (например, мятную полоску)
+            if (slide.content) {
+                const extra = document.createElement('div');
+                extra.innerHTML = slide.content;
+                contentArea.appendChild(extra);
+            }
+
+            // Рендерим элементы списка в зависимости от типа слайда
+            if (slide.type === 'case_hub') {
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-2 md:grid-cols-4 gap-2 w-full mt-2';
+                slide.cases.forEach(c => {
+                    grid.innerHTML += `
+                        <div class="bg-white p-3 md:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center gap-2">
+                            <i data-lucide="${c.i}" class="w-6 h-6 text-[#6FEAD1]"></i>
+                            <span class="font-bold text-slate-700 text-[9px] md:text-xs text-center uppercase tracking-wider leading-none">${c.n}</span>
+                        </div>`;
+                });
+                contentArea.appendChild(grid);
+            } else if (slide.type === 'grid_employees_5x2') {
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-2 grid-rows-5 gap-1.5 w-full mt-1';
+                slide.items.forEach(t => {
+                    grid.innerHTML += `
+                        <div class="bg-white py-2 px-3 rounded-xl border border-slate-100 shadow-sm font-black text-center text-[9px] md:text-[11px] text-slate-500 uppercase tracking-widest leading-none flex items-center justify-center min-h-[45px]">
+                            ${t}
+                        </div>`;
+                });
+                contentArea.appendChild(grid);
+            } else if (slide.type === 'comparison') {
+                const comp = document.createElement('div');
+                comp.className = 'space-y-1.5 md:space-y-4 w-full mt-2';
+                comp.innerHTML = `<div class="grid grid-cols-2 gap-4 text-[0.5rem] md:text-sm uppercase tracking-widest font-black text-slate-400 px-1 text-center"><span>Было</span><span>Становится</span></div>`;
+                slide.items.forEach(item => {
+                    comp.innerHTML += `
+                        <div class="grid grid-cols-2 gap-2 md:gap-4">
+                            <div class="flex items-center justify-center p-2 bg-slate-100 text-slate-400 rounded-xl font-semibold italic text-center text-[10px] md:text-lg leading-tight">${item.f}</div>
+                            <div class="flex items-center justify-center gap-2 p-2 bg-[#0F172A] text-[#6FEAD1] rounded-xl font-bold shadow-lg text-center text-[10px] md:text-lg leading-tight">
+                                <i data-lucide="${item.i}" class="w-3.5 h-3.5 md:w-4 md:h-4"></i> <span class="ml-1">${item.t}</span>
+                            </div>
+                        </div>`;
+                });
+                contentArea.appendChild(comp);
+            } else if (slide.type === 'problems') {
+                slide.items.forEach(text => {
+                    contentArea.innerHTML += `
+                        <div class="flex items-center gap-3 p-2.5 bg-red-50 text-red-700 rounded-xl font-bold border border-red-100 italic text-[0.75rem] md:text-lg w-full">
+                            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+                            <span class="leading-tight">${text}</span>
+                        </div>`;
+                });
+            } else if (slide.type === 'roles') {
+                slide.items.forEach(item => {
+                    contentArea.innerHTML += `
+                        <div class="bg-white p-3.5 rounded-xl border-l-[6px] border-[#6FEAD1] shadow-sm w-full text-left">
+                            <div class="font-black text-[#0F172A] text-[9px] md:text-base uppercase tracking-widest mb-0.5">${item.s}</div>
+                            <div class="font-semibold text-slate-500 text-[10px] md:text-xl leading-snug">${item.r}</div>
+                        </div>`;
+                });
+            } else if (slide.type === 'table') {
+                const table = document.createElement('div');
+                table.className = 'w-full space-y-1.5 md:space-y-2 mt-2';
+                slide.items.forEach(item => {
+                    table.innerHTML += `
+                        <div class="flex justify-between items-center bg-white p-3 md:p-6 rounded-xl border border-slate-100 shadow-sm">
+                            <span class="font-bold text-slate-700 text-[10px] md:text-xl">${item.t}</span>
+                            <span class="text-[#6FEAD1] font-black text-[10px] md:text-lg uppercase whitespace-nowrap leading-none">${item.d}</span>
+                        </div>`;
+                });
+                contentArea.appendChild(table);
+            } else if (slide.type === 'last') {
+                const tags = document.createElement('div');
+                tags.className = 'flex flex-wrap justify-center gap-2.5 mt-4 md:mt-6 max-w-xl overflow-visible pb-10';
+                slide.items.forEach(item => {
+                    tags.innerHTML += `
+                        <div class="flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-full shadow-lg border border-slate-50 whitespace-nowrap">
+                            <i data-lucide="${item.i}" class="w-3.5 h-3.5 text-[#6FEAD1] shrink-0"></i>
+                            <span class="font-black text-slate-400 uppercase tracking-widest text-[8px] md:text-[9px] leading-none">${item.t}</span>
+                        </div>`;
+                });
+                contentArea.appendChild(tags);
+            } else if (slide.items) {
+                slide.items.forEach(item => {
+                    contentArea.innerHTML += `
+                        <div class="flex items-center bg-white rounded-xl shadow-sm border border-slate-100/50 py-2.5 px-5 gap-4 w-full">
+                            <i data-lucide="${item.i}" class="w-4.5 h-4.5 text-[#6FEAD1] shrink-0"></i>
+                            <span class="font-semibold text-slate-700 leading-tight text-xs md:text-xl">${item.t}</span>
+                        </div>`;
+                });
+            }
+
+            // Футер если есть
+            if (slide.footer && !isHero && !isLast) {
+                contentArea.innerHTML += `
+                    <div class="mt-4 p-3 md:p-6 bg-[#0F172A] rounded-xl font-bold text-[10px] md:text-xl text-white shadow-xl self-start border-l-4 border-[#6FEAD1]">
+                        ${slide.footer}
+                    </div>`;
+            }
+
+            wrapper.appendChild(contentArea);
+            container.appendChild(wrapper);
+
+            // Анимация появления
+            setTimeout(() => wrapper.classList.add('slide-active'), 10);
+            
+            // Рендерим иконки
+            lucide.createIcons();
+
+            // Обновляем состояние кнопок
+            document.getElementById('prev-btn').style.visibility = currentSlideIndex === 0 ? 'hidden' : 'visible';
+            document.getElementById('next-btn').style.visibility = currentSlideIndex === slides.length - 1 ? 'hidden' : 'visible';
+        }
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentSlideIndex < slides.length - 1) {
+                currentSlideIndex++;
+                renderSlide();
+            }
+        });
+
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                renderSlide();
+            }
+        });
+
+        // Инициализация первого слайда
+        window.onload = renderSlide;
+    </script>
+</body>
+</html>
