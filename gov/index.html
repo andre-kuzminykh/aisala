@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-First Казахстан Презентация</title>
+    <title>ИИ-трансформация с AISALA AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -61,6 +61,42 @@
     </main>
 
     <script>
+        const MINT_COLOR = '#6FEAD1';
+        const STATIC_IMAGE_URL = "https://i.ibb.co/LXWLn6Wc/Chat-GPT-Image-Feb-2-2026-04-07-42-PM.png";
+
+        // Генерация фавикона динамически
+        function createFavicon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            
+            // Рисуем мятный круг
+            ctx.beginPath();
+            ctx.arc(16, 16, 16, 0, Math.PI * 2);
+            ctx.fillStyle = MINT_COLOR;
+            ctx.fill();
+            
+            // Загружаем лицо
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = STATIC_IMAGE_URL;
+            img.onload = function() {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(16, 16, 14, 0, Math.PI * 2);
+                ctx.clip();
+                // Отрисовка с акцентом на лицо (смещение как в CSS)
+                ctx.drawImage(img, -5, 0, 42, 42); 
+                ctx.restore();
+                
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = canvas.toDataURL();
+                document.head.appendChild(link);
+            };
+        }
+
         const slides = [
             {
                 id: 1,
@@ -720,7 +756,10 @@
             if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
         });
 
-        window.onload = renderSlide;
+        window.onload = function() {
+            createFavicon();
+            renderSlide();
+        };
     </script>
 </body>
 </html>
