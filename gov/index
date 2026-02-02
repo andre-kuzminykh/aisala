@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AISALA | AI-First экономика Казахстана</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+        
+        html, body {
+            margin: 0; padding: 0;
+            height: 100%; width: 100%;
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            overscroll-behavior: none; 
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Адаптивные заголовки: уменьшаются, чтобы влезть */
+        .slide-title {
+            font-size: clamp(1.4rem, 4vw, 2.8rem);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            max-width: 85%; /* Чтобы не лезло на картинку */
+        }
+        
+        .hero-title {
+            font-size: clamp(1.8rem, 6vw, 4rem);
+            line-height: 1;
+            letter-spacing: -0.04em;
+            max-width: 85%;
+        }
+
+        .content-scroll-area {
+            max-height: 80vh;
+            overflow-y: auto;
+            padding-right: 20px;
+        }
+
+        .nav-btn {
+            background: #0F172A;
+            color: white;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .nav-btn:hover:not(:disabled) {
+            background: #6FEAD1;
+            color: #0F172A;
+        }
+        .nav-btn:disabled {
+            opacity: 0.1;
+            cursor: not-allowed;
+        }
+
+        .result-frame {
+            padding: 0.8rem 1.2rem;
+            background: #F1F5F9;
+            border-left: 4px solid #6FEAD1;
+            border-radius: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            color: #475569;
+            margin-top: 1.2rem;
+            display: inline-block;
+        }
+
+        .compare-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        const getMotionLib = () => window.Motion || window.framerMotion || null;
+        const motionLib = getMotionLib();
+        const motion = motionLib ? motionLib.motion : { div: (props) => <div {...props} /> };
+        const AnimatePresence = motionLib ? motionLib.AnimatePresence : ({ children }) => <>{children}</>;
+
+        const Icon = ({ name, size = 20, className = "" }) => {
+            const iconRef = useRef(null);
+            useEffect(() => {
+                if (iconRef.current && window.lucide) {
+                    window.lucide.createIcons({ targets: [iconRef.current] });
+                }
+            }, [name]);
+            return <i ref={iconRef} data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
+
+        const STATIC_IMAGE_URL = "https://i.ibb.co/LXWLn6Wc/Chat-GPT-Image-Feb-2-2026-04-07-42-PM.png";
+
+        const SLIDES = [
+            {
+                type: 'hero',
+                title: 'AI-First экономика Казахстана',
+                subtitle: 'ИИ-трансформация государственного сектора',
+                content: <div className="mt-8"><div className="h-1.5 w-24 bg-[#6FEAD1] rounded-full"></div></div>
+            },
+            {
+                title: 'Ключевая идея',
+                subtitle: 'Мы строим новую экономику',
+                content: <ul className="space-y-4 mt-6">
+                    {[
+                        { i: 'cpu', t: 'ИИ становится новой производительной силой' },
+                        { i: 'trending-up', t: 'Рост эффективности больше не масштабируется людьми' },
+                        { i: 'landmark', t: 'Государство — главный драйвер ИИ-трансформации' }
+                    ].map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-4 text-lg font-medium text-slate-600">
+                            <div className="p-2 bg-white rounded-lg shadow-sm border border-slate-100"><Icon name={item.i} className="text-[#6FEAD1]" /></div>
+                            {item.t}
+                        </li>
+                    ))}
+                </ul>
+            },
+            {
+                title: 'Глобальный контекст',
+                subtitle: 'AI-First экономики формируются сейчас',
+                content: <ul className="space-y-4 mt-6">
+                    {[
+                        { i: 'zap', t: 'ИИ = базовая инфраструктура (как электричество)' },
+                        { i: 'globe', t: 'Отставание в ИИ = потеря конкурентоспособности' },
+                        { i: 'shield', t: 'Суверенность невозможна без собственного ИИ' }
+                    ].map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-4 text-lg font-medium text-slate-600">
+                            <div className="p-2 bg-white rounded-lg shadow-sm border border-slate-100"><Icon name={item.i} className="text-[#6FEAD1]" /></div>
+                            {item.t}
+                        </li>
+                    ))}
+                </ul>
+            },
+            {
+                title: 'Почему государство',
+                subtitle: 'Государство — архитектор ИИ-экономики',
+                content: <div className="grid grid-cols-1 gap-3 mt-6">
+                    {[
+                        { i: 'file-text', t: 'Формирует правила и стандарты' },
+                        { i: 'server', t: 'Владеет ключевой инфраструктурой' },
+                        { i: 'graduation-cap', t: 'Выращивает человеческий капитал' },
+                        { i: 'maximize', t: 'Масштабирует практики на всю страну' }
+                    ].map((item, i) => (
+                        <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-xl shadow-sm border-l-4 border-[#6FEAD1] font-bold text-slate-700">
+                            <Icon name={item.i} className="text-[#6FEAD1]" />
+                            {item.t}
+                        </div>
+                    ))}
+                </div>
+            },
+            {
+                title: 'Проблема сегодня',
+                subtitle: 'Цифровизация не даёт эффекта',
+                content: <div className="space-y-3 mt-6">
+                    {[
+                        'Автоматизация устаревших процессов', 'Фрагментированные ИТ-системы', 
+                        'Нет единой ИИ-стратегии', 'Дефицит компетенций', 'Пилоты без масштабирования'
+                    ].map(t => (
+                        <div key={t} className="flex items-center gap-3 p-3 bg-red-50 text-red-700 rounded-lg font-bold border border-red-100 italic text-sm">
+                             <Icon name="alert-circle" size={16} className="text-red-500" /> {t}
+                        </div>
+                    ))}
+                </div>
+            },
+            {
+                title: 'Целевая модель',
+                subtitle: 'AI-First государство',
+                content: <div className="mt-6 space-y-2">
+                    {[
+                        { f: 'Ручные процессы', t: 'ИИ-агенты', i: 'bot' },
+                        { f: 'Разрозненные данные', t: 'Единая ИИ-платформа', i: 'database' },
+                        { f: 'Перегруженные сотрудники', t: 'Сотрудники + ИИ', i: 'user-plus' },
+                        { f: 'Медленные решения', t: 'Гибридный интеллект', i: 'brain' }
+                    ].map((item, i) => (
+                        <div key={i} className="grid grid-cols-2 gap-3">
+                            <div className="compare-card bg-slate-100 text-slate-400 italic"><Icon name="minus" size={14}/> {item.f}</div>
+                            <div className="compare-card bg-[#0F172A] text-[#6FEAD1] shadow-md">
+                                <Icon name={item.i} size={14} /> {item.t}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            },
+            {
+                title: 'Кто мы',
+                subtitle: 'AISALA AI',
+                content: <div className="space-y-6 mt-6">
+                    <ul className="space-y-3 text-lg font-bold text-slate-600">
+                        <li className="flex items-center gap-4"><Icon name="check-circle" className="text-[#6FEAD1]" /> ИИ-партнёр Казахстана</li>
+                        <li className="flex items-center gap-4"><Icon name="map-pin" className="text-[#6FEAD1]" /> Работаем внутри страны</li>
+                        <li className="flex items-center gap-4"><Icon name="shield" className="text-[#6FEAD1]" /> Локализуем данные и модели</li>
+                    </ul>
+                    <div className="p-6 bg-[#0F172A] text-white rounded-2xl font-bold italic border-l-4 border-[#6FEAD1]">
+                        "Данные, модели и управление — в Казахстане"
+                    </div>
+                </div>
+            },
+            {
+                title: 'Кто за что отвечает',
+                subtitle: 'Институциональная модель',
+                content: <div className="mt-6 space-y-3">
+                    {[
+                        { s: 'Государство', r: 'Владелец стратегии и данных', i: 'landmark' },
+                        { s: 'AISALA AI', r: 'Оператор и интегратор', i: 'briefcase' },
+                        { s: 'ИИ', r: 'Инструмент анализа', i: 'brain-circuit' }
+                    ].map((item, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl">
+                            <div className="flex items-center gap-3">
+                                <Icon name={item.i} className="text-[#6FEAD1]" />
+                                <span className="font-black text-[#0F172A] text-sm">{item.s}</span>
+                            </div>
+                            <span className="text-slate-500 font-medium text-xs">{item.r}</span>
+                        </div>
+                    ))}
+                </div>
+            },
+            {
+                title: 'Запуск трансформации',
+                subtitle: 'Онбординг',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'users', t: 'Установочная встреча с руководством' },
+                        { i: 'lightbulb', t: 'Формирование общего понимания ИИ' },
+                        { i: 'target', t: 'Совместный выбор целей ИИ-трансформации' }
+                    ].map((item, i) => (
+                        <div key={i} className="flex gap-4 items-center">
+                            <div className="p-2 bg-[#6FEAD1]/10 rounded-lg text-[#6FEAD1]"><Icon name={item.i} /></div>
+                            <p className="text-lg text-slate-700 font-semibold">{item.t}</p>
+                        </div>
+                    ))}
+                    <div className="result-frame">единый управленческий фреймворк</div>
+                </div>
+            },
+            {
+                title: 'Аудит ИИ-зрелости',
+                subtitle: 'Диагностика',
+                content: <div className="grid grid-cols-1 gap-3 mt-6">
+                    {[
+                        { i: 'activity', t: 'Анализ ключевых процессов' },
+                        { i: 'file-search', t: 'Модель AS-IS' },
+                        { i: 'arrow-right-circle', t: 'Целевая модель TO-BE' },
+                        { i: 'bar-chart', t: 'Индекс ИИ-зрелости' }
+                    ].map((item, i) => (
+                         <div key={i} className="flex items-center gap-4 p-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-600">
+                            <Icon name={item.i} className="text-[#6FEAD1]" size={18} /> {item.t}
+                         </div>
+                    ))}
+                    <div className="result-frame">стратегия ИИ-трансформации</div>
+                </div>
+            },
+            {
+                title: 'Персональный AI-playbook',
+                subtitle: 'Стратегия',
+                content: <div className="space-y-6 mt-6">
+                    <p className="text-sm font-medium text-slate-500 italic">SWOT-анализ, быстрые победы, тактические шаги и ROI-прогноз.</p>
+                    <div className="p-8 bg-[#6FEAD1]/10 rounded-[32px] border-2 border-[#6FEAD1] flex flex-col items-center gap-2">
+                        <span className="font-black text-slate-900 uppercase tracking-widest text-xs">Для государства</span>
+                        <span className="text-4xl font-black text-slate-900">БЕСПЛАТНО</span>
+                    </div>
+                </div>
+            },
+            {
+                title: 'Быстрые победы',
+                subtitle: 'Первые 90 дней',
+                content: <div className="space-y-3 mt-6">
+                    {[
+                        { i: 'zap', t: 'ИИ-ассистенты для сотрудников' },
+                        { i: 'message-square', t: 'ИИ-обработка обращений 24/7' },
+                        { i: 'refresh-ccw', t: 'Автоматизация 1–3 рутинных процессов' }
+                    ].map((item, i) => (
+                        <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-xl shadow-sm font-bold border border-slate-50">
+                            <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">измеримый эффект и доверие руководства</div>
+                </div>
+            },
+            {
+                title: 'Суперагент',
+                subtitle: 'ИИ-платформа',
+                content: <div className="space-y-3 mt-6">
+                    {[
+                        { i: 'layers', t: 'Мультимодальные ИИ-модели' },
+                        { i: 'database', t: 'Память всего государства' },
+                        { i: 'plug', t: 'Интеграции с госсистемами' },
+                        { i: 'settings', t: 'Управление контекстом' },
+                        { i: 'play', t: 'Автоматизация действий' },
+                        { i: 'code', t: 'Создание ИИ-приложений' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-4 p-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-600 text-sm">
+                            <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                </div>
+            },
+            {
+                title: 'Цифровая рабочая сила',
+                subtitle: 'ИИ-сотрудники',
+                content: <div className="flex flex-wrap gap-2 mt-6">
+                    {['Менеджмент', 'HR', 'SMM', 'Маркетинг', 'Продажи', 'Поддержка', 'Аналитика', 'Дизайн', 'Разработка', 'Инженерия'].map(t => (
+                        <span key={t} className="px-4 py-2 bg-slate-100 text-slate-500 border border-slate-200 rounded-full text-[10px] font-black uppercase tracking-widest">{t}</span>
+                    ))}
+                </div>
+            },
+            {
+                title: 'Агент-менеджер',
+                subtitle: 'ИИ-сотрудник',
+                content: <ul className="space-y-4 mt-6 text-lg font-bold text-slate-600">
+                    {[
+                        { i: 'calendar', t: 'Ведение календаря и заметок' },
+                        { i: 'mic', t: 'Консультации клиентов' },
+                        { i: 'file-text', t: 'Помощь в подготовке документов' },
+                        { i: 'check-square', t: 'Управление задачами команды' }
+                    ].map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-3">
+                            <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </li>
+                    ))}
+                </ul>
+            },
+            {
+                title: 'HR-агент',
+                subtitle: 'ИИ-сотрудник',
+                content: <ul className="space-y-4 mt-6 text-lg font-bold text-slate-600">
+                    {[
+                        { i: 'user-search', t: 'Умный поиск кандидатов' },
+                        { i: 'video', t: 'Автоматическое собеседование' },
+                        { i: 'user-plus', t: 'Онбординг и учет расписания' },
+                        { i: 'heart', t: 'Обучение и поддержка сотрудников' }
+                    ].map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-3">
+                            <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </li>
+                    ))}
+                </ul>
+            },
+            {
+                title: 'SMM-агент',
+                subtitle: 'ИИ-сотрудник',
+                content: <ul className="space-y-4 mt-6 text-lg font-bold text-slate-600">
+                    {[
+                        { i: 'newspaper', t: 'Мониторинг новостей и повестки' },
+                        { i: 'layout', t: 'Подготовка контент-плана' },
+                        { i: 'edit-3', t: 'Создание текстового и видео-контента' },
+                        { i: 'eye', t: 'Анализ обратной связи 24/7' }
+                    ].map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-3">
+                            <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </li>
+                    ))}
+                </ul>
+            },
+            {
+                title: 'Консультации',
+                subtitle: 'Темы и длительность',
+                content: <div className="mt-6 space-y-3">
+                    {[
+                        { i: 'presentation', t: 'Стратегическая сессия по ИИ', d: '1 день' },
+                        { i: 'search', t: 'Оценка ИИ-автоматизации', d: '30 минут' },
+                        { i: 'users', t: 'Управление изменениями', d: '1 час' },
+                        { i: 'flask-conical', t: 'Исследования в области ИИ', d: 'Под заказ' }
+                    ].map((item, i) => (
+                        <div key={i} className="flex justify-between items-center p-4 bg-white border border-slate-100 rounded-xl">
+                            <div className="flex items-center gap-3">
+                                <Icon name={item.i} size={16} className="text-[#6FEAD1]" />
+                                <span className="font-bold text-slate-700 text-sm">{item.t}</span>
+                            </div>
+                            <span className="text-xs font-black text-slate-400">{item.d}</span>
+                        </div>
+                    ))}
+                </div>
+            },
+            {
+                title: 'Обучение',
+                subtitle: 'Программы подготовки',
+                content: <div className="mt-6 space-y-3">
+                    {[
+                        { i: 'briefcase', t: 'AI Executive Day', d: '1 день' },
+                        { i: 'code', t: 'AI Product Hackathon', d: '1 неделя' },
+                        { i: 'terminal', t: 'AI Automation Bootcamp', d: '1 месяц' },
+                        { i: 'database', t: 'AI Engineer Program', d: '3 месяца' }
+                    ].map((item, i) => (
+                        <div key={i} className="flex justify-between items-center p-4 bg-white border border-slate-100 rounded-xl">
+                            <div className="flex items-center gap-3">
+                                <Icon name={item.i} size={16} className="text-[#6FEAD1]" />
+                                <span className="font-bold text-slate-700 text-sm">{item.t}</span>
+                            </div>
+                            <span className="text-xs font-black text-slate-400">{item.d}</span>
+                        </div>
+                    ))}
+                </div>
+            },
+            {
+                title: 'AI Executive Day',
+                subtitle: 'Обучение руководителей',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'award', t: 'Роль руководителя в AI-First государстве' },
+                        { i: 'brain-circuit', t: 'Принятие решений с ИИ' },
+                        { i: 'alert-triangle', t: 'Управление рисками' },
+                        { i: 'check-square', t: 'Практические кейсы' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-4 text-lg font-bold text-slate-600">
+                            <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">единое управленческое понимание ИИ</div>
+                </div>
+            },
+            {
+                title: 'AI Automation Bootcamp',
+                subtitle: 'Обучение',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'git-branch', t: 'Моделирование и приоритизация' },
+                        { i: 'cpu', t: 'Проектирование ИИ-агентов' },
+                        { i: 'database', t: 'Работа с данными и интеграциями' },
+                        { i: 'bar-chart-2', t: 'Измерение финансового эффекта' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-4 text-lg font-bold text-slate-600">
+                            <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">ИИ-агенты в реальных процессах</div>
+                </div>
+            },
+            {
+                title: 'AI Product Hackathon',
+                subtitle: 'Обучение',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'users', t: 'Проблемы граждан и бизнеса' },
+                        { i: 'box', t: 'Проектирование ИИ-сервисов' },
+                        { i: 'play', t: 'Быстрое прототипирование' },
+                        { i: 'check-circle', t: 'Проверка гипотез' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-4 text-lg font-bold text-slate-600">
+                            <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">готовые ИИ-продукты для граждан</div>
+                </div>
+            },
+            {
+                title: 'AI Engineer Program',
+                subtitle: 'Обучение',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'server', t: 'Архитектура ИИ-систем' },
+                        { i: 'code', t: 'Обучение и дообучение моделей' },
+                        { i: 'settings', t: 'MLOps / AIOps / DataOps' },
+                        { i: 'shield', t: 'Безопасность и контроль' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-4 text-lg font-bold text-slate-600">
+                            <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">внутренние ИИ-инженеры государства</div>
+                </div>
+            },
+            {
+                title: 'Найм ИИ-талантов',
+                subtitle: 'Кадры для государства',
+                content: <div className="space-y-4 mt-8">
+                    {[
+                        { i: 'user-check', t: 'AI Executives' },
+                        { i: 'code', t: 'AI Engineers' },
+                        { i: 'terminal', t: 'AI Automation Engineers' },
+                        { i: 'box', t: 'AI Product Engineers' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-xl font-black text-slate-800 shadow-sm">
+                            <Icon name={item.i} className="text-[#6FEAD1]" />
+                            <span className="text-xs uppercase tracking-widest">{item.t}</span>
+                        </div>
+                    ))}
+                </div>
+            },
+            {
+                title: 'Найм AI Executives',
+                subtitle: <span className="text-[#6FEAD1] uppercase tracking-widest text-sm font-black">Управление ИИ-трансформацией</span>,
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'search', t: 'Анализ и моделирование процессов' },
+                        { i: 'map', t: 'Формирование ИИ-стратегии' },
+                        { i: 'target', t: 'Приоритизация ИИ-проектов' },
+                        { i: 'activity', t: 'Контроль внедрения и эффекта' },
+                        { i: 'users', t: 'Управление изменениями ролей' }
+                    ].map(item => (
+                        <p key={item.t} className="flex gap-4 items-center text-slate-600 font-bold">
+                            <Icon name={item.i} className="text-[#6FEAD1]" size={18} /> {item.t}
+                        </p>
+                    ))}
+                    <div className="result-frame">стратегическая управляемость</div>
+                </div>
+            },
+            {
+                title: 'Найм AI Automation Engineer',
+                subtitle: <span className="text-[#6FEAD1] uppercase tracking-widest text-sm font-black">Автоматизация процессов</span>,
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'git-branch', t: 'Проектирование процесса с ИИ' },
+                        { i: 'bot', t: 'Дизайн ИИ-агента' },
+                        { i: 'play', t: 'Внедрение ИИ-агента' },
+                        { i: 'bar-chart-2', t: 'Дашборд AIOps' }
+                    ].map(item => (
+                        <p key={item.t} className="flex gap-4 items-center text-slate-600 font-bold">
+                            <Icon name={item.i} className="text-[#6FEAD1]" size={18} /> {item.t}
+                        </p>
+                    ))}
+                    <div className="result-frame">снимаем −30–70% ручной нагрузки</div>
+                </div>
+            },
+            {
+                title: 'Найм AI Product Engineer',
+                subtitle: <span className="text-[#6FEAD1] uppercase tracking-widest text-sm font-black">Разработка сервисов</span>,
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'users', t: 'Исследование проблем (граждане / бизнес)' },
+                        { i: 'box', t: 'Проектирование ИИ-сервиса' },
+                        { i: 'code', t: 'Разработка ИИ-сервиса' },
+                        { i: 'activity', t: 'BI-аналитика' }
+                    ].map(item => (
+                        <p key={item.t} className="flex gap-4 items-center text-slate-600 font-bold">
+                            <Icon name={item.i} className="text-[#6FEAD1]" size={18} /> {item.t}
+                        </p>
+                    ))}
+                    <div className="result-frame">Государство как ИИ-платформа</div>
+                </div>
+            },
+            {
+                title: 'Найм AI Engineer',
+                subtitle: <span className="text-[#6FEAD1] uppercase tracking-widest text-sm font-black">Обучение моделей</span>,
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'database', t: 'Подготовка и очистка данных' },
+                        { i: 'terminal', t: 'Обучение и дообучение моделей' },
+                        { i: 'shield', t: 'MLOps / AIOps' },
+                        { i: 'lock', t: 'Безопасность и аудит' }
+                    ].map(item => (
+                        <p key={item.t} className="flex gap-4 items-center text-slate-600 font-bold">
+                            <Icon name={item.i} className="text-[#6FEAD1]" size={18} /> {item.t}
+                        </p>
+                    ))}
+                    <div className="result-frame">Суверенные ИИ-технологии</div>
+                </div>
+            },
+            {
+                title: 'Экономический эффект',
+                subtitle: 'Результаты внедрения',
+                content: <div className="mt-8 space-y-3">
+                    {[
+                        { i: 'clock', l: 'Рутинные операции', v: '−30–70%' },
+                        { i: 'zap', l: 'Скорость услуг', v: '−40–60%' },
+                        { i: 'target', l: 'Управленческие решения', v: 'Обоснованные' },
+                        { i: 'users', l: 'Кадровая эффективность', v: '−20–30% ФОТ' }
+                    ].map((item, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <Icon name={item.i} className="text-[#6FEAD1]" />
+                                <span className="font-bold text-slate-500 text-sm">{item.l}</span>
+                            </div>
+                            <span className="text-xl font-black text-[#0F172A]">{item.v}</span>
+                        </div>
+                    ))}
+                </div>
+            },
+            {
+                title: 'Отраслевые ИИ-кейсы',
+                subtitle: 'Прикладной эффект',
+                content: <div className="grid grid-cols-2 gap-2 mt-6">
+                    {[
+                        { i: 'landmark', t: 'Банки' }, { i: 'tv', t: 'Медиа' }, { i: 'graduation-cap', t: 'Образование' },
+                        { i: 'microscope', t: 'Наука' }, { i: 'heart', t: 'Медицина' }, { i: 'smile', t: 'Услуги' },
+                        { i: 'signal', t: 'Телеком' }, { i: 'shield', t: 'Правительство' }
+                    ].map(item => (
+                        <div key={item.t} className="p-3 bg-white border border-slate-100 rounded-xl flex items-center gap-3">
+                             <Icon name={item.i} size={14} className="text-[#6FEAD1]" />
+                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{item.t}</span>
+                        </div>
+                    ))}
+                </div>
+            },
+            {
+                title: 'Банки',
+                subtitle: 'ИИ-финансовая система',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'shield-check', t: 'Антифрод и риск-модели' },
+                        { i: 'bar-chart-2', t: 'Аналитика социальных программ' },
+                        { i: 'file-check', t: 'Комплаенс и отчетность' },
+                        { i: 'line-chart', t: 'Макроэкономическая аналитика' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-600 text-sm">
+                             <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">устойчивость финансовой системы</div>
+                </div>
+            },
+            {
+                title: 'Медиа',
+                subtitle: 'ИИ-коммуникации государства',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'layout', t: 'Анализ и планирование контента' },
+                        { i: 'eye', t: 'Мониторинг повестки' },
+                        { i: 'shield-off', t: 'Работа с дезинформацией' },
+                        { i: 'message-square', t: 'Обратная связь с гражданами' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-600 text-sm">
+                             <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">доверие и скорость реакции</div>
+                </div>
+            },
+            {
+                title: 'Образование',
+                subtitle: 'ИИ-система подготовки кадров',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'user', t: 'Персонализированное обучение' },
+                        { i: 'users', t: 'ИИ-ассистенты для учителей' },
+                        { i: 'activity', t: 'Аналитика успеваемости' },
+                        { i: 'target', t: 'Прогноз кадровых потребностей' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-600 text-sm">
+                             <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">качество образования</div>
+                </div>
+            },
+            {
+                title: 'Наука',
+                subtitle: 'ИИ-ускорение исследований',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'book-open', t: 'ИИ-ассистенты исследователей' },
+                        { i: 'search', t: 'Анализ научных публикаций' },
+                        { i: 'list', t: 'Приоритизация программ' },
+                        { i: 'link', t: 'Связка науки и экономики' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-600 text-sm">
+                             <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">рост научной продуктивности</div>
+                </div>
+            },
+            {
+                title: 'Медицина',
+                subtitle: 'ИИ-здравоохранение',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'git-pull-request', t: 'Умная маршрутизация пациентов' },
+                        { i: 'brain', t: 'ИИ-поддержка диагностики' },
+                        { i: 'users', t: 'Управление очередями' },
+                        { i: 'bar-chart', t: 'Аналитика системы' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-600 text-sm">
+                             <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">доступность и снижение нагрузки</div>
+                </div>
+            },
+            {
+                title: 'Услуги',
+                subtitle: 'ИИ-сервисы для граждан и бизнеса',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'message-circle', t: 'Обработка обращений 24/7' },
+                        { i: 'user-check', t: 'Персонализация госуслуг' },
+                        { i: 'clock', t: 'Снижение сроков и отказов' },
+                        { i: 'thumbs-up', t: 'Аналитика качества сервиса' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-600 text-sm">
+                             <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">рост удовлетворённости граждан</div>
+                </div>
+            },
+            {
+                title: 'Телеком',
+                subtitle: 'Цифровая связность страны',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'settings', t: 'Управление инфраструктурой' },
+                        { i: 'alert-triangle', t: 'Прогноз перегрузок сетей' },
+                        { i: 'check-square', t: 'Контроль качества услуг' },
+                        { i: 'shield', t: 'Основа цифрового суверенитета' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-600 text-sm">
+                             <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">надежная связь как база</div>
+                </div>
+            },
+            {
+                title: 'Правительство',
+                subtitle: 'ИИ-ядро государства',
+                content: <div className="space-y-4 mt-6">
+                    {[
+                        { i: 'briefcase', t: 'ИИ-ассистент для руководителей' },
+                        { i: 'clipboard-list', t: 'Контроль поручений' },
+                        { i: 'bar-chart-2', t: 'Аналитика KPI и госпрограмм' },
+                        { i: 'database', t: 'Платформа межведомственных данных' }
+                    ].map(item => (
+                        <div key={item.t} className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-600 text-sm">
+                             <Icon name={item.i} className="text-[#6FEAD1]" /> {item.t}
+                        </div>
+                    ))}
+                    <div className="result-frame">управляемость и прозрачность</div>
+                </div>
+            },
+            {
+                title: 'Суверенность',
+                subtitle: 'Безопасность и контроль',
+                content: <ul className="space-y-4 mt-6 font-bold text-slate-600 text-lg">
+                    {[
+                        { i: 'shield', t: 'Данные остаются в Казахстане' },
+                        { i: 'server', t: 'Локальные модели (On-prem)' },
+                        { i: 'lock', t: 'Полный аудит и логирование' },
+                        { i: 'user-check', t: 'Человек всегда ответственен' }
+                    ].map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-5">
+                            <div className="w-12 h-12 bg-white shadow-sm border border-slate-100 rounded-2xl flex items-center justify-center text-[#6FEAD1]"><Icon name={item.i} /></div>
+                            {item.t}
+                        </li>
+                    ))}
+                </ul>
+            },
+            {
+                title: 'Дальнейшие шаги',
+                subtitle: '90 дней',
+                content: <div className="space-y-4 mt-6 text-xl font-bold text-slate-600">
+                    {[
+                        'Диагностика процессов и ИИ-зрелости', 'Внедрение готовых инструментов',
+                        'Обучение автоматизации', 'Пилот одного проекта', 'Найм ИИ-команды'
+                    ].map((t, i) => (
+                        <div key={i} className="flex gap-4 items-center">
+                            <span className="text-[#6FEAD1] font-black">0{i+1}.</span> {t}
+                        </div>
+                    ))}
+                </div>
+            },
+            {
+                title: 'AI-First Государство',
+                subtitle: 'Основа новой экономики',
+                content: <div className="mt-10 space-y-6">
+                    <div className="flex flex-wrap gap-2">
+                        {['Новая производительность', 'Новое качество управления', 'Новые кадры и культура', 'Технологический суверенитет'].map(t => (
+                             <span key={t} className="px-4 py-2 bg-slate-100 text-slate-500 border border-slate-200 rounded-full text-[9px] font-black uppercase tracking-widest">{t}</span>
+                        ))}
+                    </div>
+                    <p className="text-2xl font-black text-slate-800 tracking-tighter mt-10 uppercase">Будущее начинается с AISALA AI.</p>
+                </div>
+            }
+        ];
+
+        const App = () => {
+            const [currentSlide, setCurrentSlide] = useState(0);
+            const [isAnimating, setIsAnimating] = useState(false);
+            const lastScrollTime = useRef(0);
+
+            const goToSlide = useCallback((index) => {
+                if (index >= 0 && index < SLIDES.length && !isAnimating) {
+                    setIsAnimating(true);
+                    setCurrentSlide(index);
+                    setTimeout(() => setIsAnimating(false), 850);
+                }
+            }, [isAnimating]);
+
+            const handleWheel = (e) => {
+                const now = Date.now();
+                if (now - lastScrollTime.current < 1200) return;
+                if (Math.abs(e.deltaY) > 30) {
+                    if (e.deltaY > 0) goToSlide(currentSlide + 1);
+                    else goToSlide(currentSlide - 1);
+                    lastScrollTime.current = now;
+                }
+            };
+
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+                    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [currentSlide, goToSlide]);
+
+            const slide = SLIDES[currentSlide];
+
+            return (
+                <div 
+                    className="fixed inset-0 overflow-hidden bg-[#F8FAFC] text-[#0F172A] select-none"
+                    onWheel={handleWheel}
+                >
+                    <div className="fixed top-8 left-8 md:top-10 md:left-10 z-[110] flex items-center gap-3">
+                        <div className="w-5 h-5 bg-[#6FEAD1] rounded-full shadow-[0_0_15px_rgba(111,234,209,0.5)]" />
+                        <span className="font-black text-2xl md:text-3xl tracking-tighter uppercase">AISALA AI</span>
+                    </div>
+
+                    <div className="fixed bottom-10 right-10 z-[110] flex gap-4">
+                        <button onClick={() => goToSlide(currentSlide - 1)} disabled={currentSlide === 0} className="nav-btn"><Icon name="chevron-left" size={28} /></button>
+                        <button onClick={() => goToSlide(currentSlide + 1)} disabled={currentSlide === SLIDES.length - 1} className="nav-btn"><Icon name="chevron-right" size={28} /></button>
+                    </div>
+
+                    <main className="h-full w-full">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={currentSlide}
+                                initial={{ opacity: 0, x: 60 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -60 }}
+                                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                                className="h-full w-full grid grid-cols-1 lg:grid-cols-[55%_45%]"
+                            >
+                                <div className="h-full flex flex-col justify-center px-8 md:px-16 lg:px-24 py-20 relative z-20">
+                                    <div className="content-scroll-area hide-scrollbar">
+                                        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                                            <h1 className={`font-black uppercase text-[#0F172A] mb-4 ${slide.type === 'hero' ? 'hero-title' : 'slide-title'}`}>
+                                                {slide.title}
+                                            </h1>
+                                            <h2 className="text-xl lg:text-3xl font-bold text-[#6FEAD1] leading-tight mb-8 drop-shadow-sm">
+                                                {slide.subtitle}
+                                            </h2>
+                                            <div className="max-w-2xl w-full">{slide.content}</div>
+                                        </motion.div>
+                                    </div>
+                                </div>
+
+                                <div className="relative h-full hidden lg:block overflow-hidden z-10">
+                                    <motion.img
+                                        initial={{ opacity: 0, scale: 1.05 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 1.4 }}
+                                        src={STATIC_IMAGE_URL}
+                                        alt="Visual"
+                                        className="w-full h-full object-cover brightness-[1]"
+                                    />
+                                    <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#F8FAFC] to-transparent w-32" />
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
