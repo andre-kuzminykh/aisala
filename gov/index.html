@@ -2,18 +2,36 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ИИ-трансформация с AISALA AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; overflow: hidden; }
+        
+        * { touch-action: none; } /* Отключает браузерный зум и скролл для ручной обработки */
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            background-color: #F8FAFC;
+            color: #0F172A;
+            width: 100vw;
+            height: 100vh;
+        }
+
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .slide-enter { opacity: 0; transform: translateY(10px); transition: all 0.4s ease-out; }
-        .slide-active { opacity: 1; transform: translateY(0); }
+        .slide-enter { 
+            opacity: 0; 
+            transform: translateY(20px); 
+            transition: opacity 0.5s ease, transform 0.5s ease; 
+        }
+        .slide-active { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
         
         #avatar-mobile { z-index: 999; }
         
@@ -33,21 +51,21 @@
 
         @media (max-width: 1024px) {
             #fixed-bg-image { display: none; }
-            #content-wrapper { width: 100%; }
+            #slide-container { width: 100% !important; padding-left: 1.5rem; padding-right: 1.5rem; }
         }
     </style>
 </head>
-<body class="bg-[#F8FAFC] text-[#0F172A] select-none">
+<body class="select-none">
 
     <!-- Header Logo -->
     <div class="absolute top-5 left-6 md:top-10 md:left-10 z-[300] flex items-center gap-2">
-        <div class="w-5 h-5 bg-[#6FEAD1] rounded-full shadow-sm"></div>
+        <div class="w-4 h-4 md:w-5 md:h-5 bg-[#6FEAD1] rounded-full shadow-sm"></div>
         <span class="font-black text-xl md:text-3xl tracking-tighter uppercase leading-none">AISALA AI</span>
     </div>
 
     <!-- Mobile Floating Avatar -->
-    <div id="avatar-mobile" class="lg:hidden fixed bottom-10 right-10 pointer-events-none">
-        <div class="w-[18vh] h-[18vh] max-w-[150px] max-h-[150px] rounded-full overflow-hidden bg-[#6FEAD1] shadow-2xl">
+    <div id="avatar-mobile" class="lg:hidden fixed bottom-8 right-8 pointer-events-none">
+        <div class="w-[16vh] h-[16vh] max-w-[130px] max-h-[130px] rounded-full overflow-hidden bg-[#6FEAD1] shadow-2xl">
             <img src="https://i.ibb.co/LXWLn6Wc/Chat-GPT-Image-Feb-2-2026-04-07-42-PM.png" class="w-full h-full object-cover" style="object-position: center 8%;" alt="Avatar">
         </div>
     </div>
@@ -56,7 +74,7 @@
     <div id="fixed-bg-image" class="hidden lg:block"></div>
 
     <!-- Main Content Wrapper -->
-    <main id="slide-container" class="relative z-20 h-screen w-full lg:w-[55%] flex flex-col justify-center px-10 md:px-16 lg:px-24 transition-all duration-500">
+    <main id="slide-container" class="relative z-20 h-screen w-full lg:w-[55%] flex flex-col justify-center px-10 md:px-16 lg:px-24">
         <!-- Слайд вставляется через JS -->
     </main>
 
@@ -64,7 +82,6 @@
         const MINT_COLOR = '#6FEAD1';
         const STATIC_IMAGE_URL = "https://i.ibb.co/LXWLn6Wc/Chat-GPT-Image-Feb-2-2026-04-07-42-PM.png";
 
-        // Генерация фавикона
         function createFavicon() {
             const canvas = document.createElement('canvas');
             canvas.width = 32;
@@ -562,7 +579,7 @@
                 id: 42,
                 type: "last",
                 title: `<div class="leading-[1.1] font-black uppercase text-center w-full block"><span class="block mb-4 md:mb-8">AI-First государство —</span><span class="text-[#6FEAD1]">основа новой экономики</span></div>`,
-                subtitle: `<div class="text-center w-full block text-slate-400 font-bold uppercase tracking-widest text-lg md:text-2xl mt-4 md:mt-8">Будущее начинается сегодня</div>`,
+                subtitle: `<div class="text-center w-full block text-slate-400 font-bold uppercase tracking-widest text-lg md:text-3xl mt-2 md:mt-4">Будущее начинается сегодня</div>`,
                 items: [
                     { i: "trending-up", t: "Новая производительность" },
                     { i: "target", t: "Новое качество управления" },
@@ -585,26 +602,26 @@
             container.innerHTML = '';
             
             const wrapper = document.createElement('div');
-            wrapper.className = `w-full flex flex-col ${isLast ? 'items-center text-center' : 'items-start text-left'} slide-enter`;
+            wrapper.className = `w-full flex flex-col ${isLast ? 'items-center text-center' : 'items-start text-left'} slide-enter slide-active`;
             
-            // Title - SLIGHTLY SMALLER ON DESKTOP (lg:)
+            // Title
             const title = document.createElement('h1');
             title.className = `font-black uppercase leading-[0.92] tracking-tight mb-1 md:mb-3 
                 ${isLast ? 'text-[clamp(1.6rem,6vh,3rem)] lg:text-[2.6rem] md:mb-2' : isHero ? 'text-[clamp(2.6rem,10.5vh,6rem)] lg:text-[4.5rem]' : 'text-[clamp(1.5rem,4.5vh,3rem)] lg:text-[2.4rem]'}`;
             title.innerHTML = slide.title;
             wrapper.appendChild(title);
 
-            // Subtitle - SLIGHTLY SMALLER ON DESKTOP (lg:)
+            // Subtitle
             const subtitle = document.createElement('h2');
             subtitle.className = `font-bold uppercase tracking-tight mb-3 md:mb-6
-                ${isLast ? 'mt-0' : isHero ? 'text-[clamp(1.1rem,3.2vh,2.3rem)] lg:text-[1.8rem]' : 'text-[clamp(1rem,2.8vh,1.8rem)] lg:text-[1.4rem] text-[#6FEAD1]'}
+                ${isLast ? 'mt-0' : isHero ? 'text-[clamp(1.1rem,3.2vh,2.3rem)] lg:text-[1.8rem]' : 'text-[clamp(1.1rem,3vh,2rem)] lg:text-[1.5rem] text-[#6FEAD1]'}
                 ${isHero ? 'text-[#6FEAD1]' : ''}`;
             subtitle.innerHTML = slide.subtitle;
             wrapper.appendChild(subtitle);
 
             // Content Area
             const contentArea = document.createElement('div');
-            contentArea.className = `w-full overflow-y-visible pr-2 ${isSpecial ? 'flex flex-col items-center space-y-4 md:space-y-6' : 'space-y-1.5 md:space-y-3'}`;
+            contentArea.className = `w-full overflow-y-visible pr-2 ${isSpecial ? 'flex flex-col items-center space-y-4 md:space-y-6' : 'space-y-2 md:space-y-4'}`;
             
             if (slide.content) {
                 const extra = document.createElement('div');
@@ -614,10 +631,10 @@
 
             if (slide.type === 'case_hub') {
                 const grid = document.createElement('div');
-                grid.className = 'grid grid-cols-2 md:grid-cols-4 gap-2 w-full mt-2';
+                grid.className = 'grid grid-cols-2 md:grid-cols-4 gap-3 w-full mt-2';
                 slide.cases.forEach(c => {
                     grid.innerHTML += `
-                        <div class="bg-white p-3 md:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center gap-2">
+                        <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center gap-2">
                             <i data-lucide="${c.i}" class="w-8 h-8 lg:w-7 lg:h-7 text-[#6FEAD1]"></i>
                             <span class="font-bold text-slate-700 text-[10px] md:text-sm lg:text-xs text-center uppercase tracking-wider leading-none">${c.n}</span>
                         </div>`;
@@ -625,23 +642,23 @@
                 contentArea.appendChild(grid);
             } else if (slide.type === 'grid_employees_5x2') {
                 const grid = document.createElement('div');
-                grid.className = 'grid grid-cols-2 grid-rows-5 gap-1.5 w-full mt-1';
+                grid.className = 'grid grid-cols-2 grid-rows-5 gap-2 w-full mt-1';
                 slide.items.forEach(t => {
                     grid.innerHTML += `
-                        <div class="bg-white py-3 px-3 rounded-xl border border-slate-100 shadow-sm font-black text-center text-[11px] md:text-[14px] lg:text-[13px] text-slate-500 uppercase tracking-widest leading-none flex items-center justify-center min-h-[50px]">
+                        <div class="bg-white py-3 px-3 rounded-xl border border-slate-100 shadow-sm font-black text-center text-[12px] md:text-[16px] lg:text-[15px] text-slate-500 uppercase tracking-widest leading-none flex items-center justify-center min-h-[55px]">
                             ${t}
                         </div>`;
                 });
                 contentArea.appendChild(grid);
             } else if (slide.type === 'comparison') {
                 const comp = document.createElement('div');
-                comp.className = 'space-y-2 md:space-y-4 w-full mt-2';
+                comp.className = 'space-y-3 md:space-y-5 w-full mt-2';
                 comp.innerHTML = `<div class="grid grid-cols-2 gap-4 text-[0.6rem] md:text-sm uppercase tracking-widest font-black text-slate-400 px-1 text-center"><span>Было</span><span>Становится</span></div>`;
                 slide.items.forEach(item => {
                     comp.innerHTML += `
-                        <div class="grid grid-cols-2 gap-2 md:gap-4">
-                            <div class="flex items-center justify-center p-3 bg-slate-100 text-slate-400 rounded-xl font-semibold italic text-center text-sm md:text-2xl lg:text-xl leading-tight">${item.f}</div>
-                            <div class="flex items-center justify-center gap-2 p-3 bg-[#0F172A] text-[#6FEAD1] rounded-xl font-bold shadow-lg text-center text-sm md:text-2xl lg:text-xl leading-tight">
+                        <div class="grid grid-cols-2 gap-2 md:gap-6">
+                            <div class="flex items-center justify-center p-4 bg-slate-100 text-slate-400 rounded-xl font-semibold italic text-center text-sm md:text-2xl lg:text-xl leading-tight">${item.f}</div>
+                            <div class="flex items-center justify-center gap-2 p-4 bg-[#0F172A] text-[#6FEAD1] rounded-xl font-bold shadow-lg text-center text-sm md:text-2xl lg:text-xl leading-tight">
                                 <i data-lucide="${item.i}" class="w-5 h-5 md:w-6 md:h-6 lg:w-5 lg:h-5"></i> <span class="ml-1">${item.t}</span>
                             </div>
                         </div>`;
@@ -650,7 +667,7 @@
             } else if (slide.type === 'problems') {
                 slide.items.forEach(text => {
                     contentArea.innerHTML += `
-                        <div class="flex items-center gap-4 p-3 bg-red-50 text-red-700 rounded-xl font-bold border border-red-100 italic text-sm md:text-2xl lg:text-xl w-full">
+                        <div class="flex items-center gap-4 p-4 bg-red-50 text-red-700 rounded-xl font-bold border border-red-100 italic text-sm md:text-2xl lg:text-xl w-full">
                             <i data-lucide="alert-circle" class="w-6 h-6 lg:w-5 lg:h-5 shrink-0"></i>
                             <span class="leading-tight">${text}</span>
                         </div>`;
@@ -658,25 +675,25 @@
             } else if (slide.type === 'roles') {
                 slide.items.forEach(item => {
                     contentArea.innerHTML += `
-                        <div class="bg-white p-4 rounded-xl border-l-[6px] border-[#6FEAD1] shadow-sm w-full text-left">
-                            <div class="font-black text-[#0F172A] text-xs md:text-xl lg:text-lg uppercase tracking-widest mb-0.5">${item.s}</div>
-                            <div class="font-semibold text-slate-500 text-sm md:text-2xl lg:text-xl leading-snug">${item.r}</div>
+                        <div class="bg-white p-4 rounded-xl border-l-[8px] border-[#6FEAD1] shadow-sm w-full text-left">
+                            <div class="font-black text-[#0F172A] text-xs md:text-2xl lg:text-xl uppercase tracking-widest mb-1">${item.s}</div>
+                            <div class="font-semibold text-slate-500 text-sm md:text-3xl lg:text-2xl leading-snug">${item.r}</div>
                         </div>`;
                 });
             } else if (slide.type === 'table') {
                 const table = document.createElement('div');
-                table.className = 'w-full space-y-2 md:space-y-3 mt-2';
+                table.className = 'w-full space-y-2 md:space-y-4 mt-2';
                 slide.items.forEach(item => {
                     table.innerHTML += `
-                        <div class="flex justify-between items-center bg-white p-4 md:p-6 rounded-xl border border-slate-100 shadow-sm">
-                            <span class="font-bold text-slate-700 text-sm md:text-2xl lg:text-xl">${item.t}</span>
-                            <span class="text-[#6FEAD1] font-black text-xs md:text-xl lg:text-lg uppercase whitespace-nowrap leading-none">${item.d}</span>
+                        <div class="flex justify-between items-center bg-white p-5 md:p-7 rounded-xl border border-slate-100 shadow-sm">
+                            <span class="font-bold text-slate-700 text-sm md:text-3xl lg:text-2xl">${item.t}</span>
+                            <span class="text-[#6FEAD1] font-black text-xs md:text-2xl lg:text-xl uppercase whitespace-nowrap leading-none">${item.d}</span>
                         </div>`;
                 });
                 contentArea.appendChild(table);
             } else if (slide.type === 'last') {
                 const tags = document.createElement('div');
-                tags.className = 'flex flex-wrap justify-center gap-3 mt-2 max-w-xl overflow-visible pb-10';
+                tags.className = 'flex flex-wrap justify-center gap-3 mt-4 max-w-xl overflow-visible pb-10';
                 slide.items.forEach(item => {
                     tags.innerHTML += `
                         <div class="flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-full shadow-lg border border-slate-50 whitespace-nowrap">
@@ -688,16 +705,16 @@
             } else if (slide.items) {
                 slide.items.forEach(item => {
                     contentArea.innerHTML += `
-                        <div class="flex items-center bg-white rounded-xl shadow-sm border border-slate-100/50 py-3 px-5 gap-4 w-full">
+                        <div class="flex items-center bg-white rounded-xl shadow-sm border border-slate-100/50 py-4 px-6 gap-5 w-full">
                             <i data-lucide="${item.i}" class="w-6 h-6 lg:w-5 lg:h-5 text-[#6FEAD1] shrink-0"></i>
-                            <span class="font-semibold text-slate-700 leading-tight text-sm md:text-2xl lg:text-xl">${item.t}</span>
+                            <span class="font-semibold text-slate-700 leading-tight text-sm md:text-3xl lg:text-2xl">${item.t}</span>
                         </div>`;
                 });
             }
 
             if (slide.footer && !isHero && !isLast) {
                 contentArea.innerHTML += `
-                    <div class="mt-6 p-4 md:p-7 bg-[#0F172A] rounded-xl font-bold text-sm md:text-2xl lg:text-xl text-white shadow-xl self-start border-l-4 border-[#6FEAD1]">
+                    <div class="mt-6 p-5 md:p-8 bg-[#0F172A] rounded-xl font-bold text-sm md:text-3xl lg:text-2xl text-white shadow-xl self-start border-l-4 border-[#6FEAD1]">
                         ${slide.footer}
                     </div>`;
             }
@@ -705,7 +722,6 @@
             wrapper.appendChild(contentArea);
             container.appendChild(wrapper);
 
-            setTimeout(() => wrapper.classList.add('slide-active'), 10);
             lucide.createIcons();
         }
 
@@ -720,34 +736,35 @@
             }
         }
 
-        // Mouse Wheel / Trackpad Scroll
+        // Wheel Scroll
         window.addEventListener('wheel', (e) => {
-            if (Math.abs(e.deltaY) > 30 || Math.abs(e.deltaX) > 30) {
-                const dir = (e.deltaY > 0 || e.deltaX > 0) ? 1 : -1;
-                navigate(dir);
+            if (Math.abs(e.deltaY) > 20 || Math.abs(e.deltaX) > 20) {
+                navigate(e.deltaY > 0 || e.deltaX > 0 ? 1 : -1);
             }
-        });
+        }, { passive: true });
 
-        // Touch Swipes
-        let touchStart = null;
+        // Swipes
+        let startX = 0;
+        let startY = 0;
         window.addEventListener('touchstart', (e) => {
-            touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        });
-        window.addEventListener('touchend', (e) => {
-            if (!touchStart) return;
-            const deltaX = touchStart.x - e.changedTouches[0].clientX;
-            const deltaY = touchStart.y - e.changedTouches[0].clientY;
-            if (Math.abs(deltaX) > 50 || Math.abs(deltaY) > 50) {
-                const dir = (deltaX > 0 || deltaY > 0) ? 1 : -1;
-                navigate(dir);
-            }
-            touchStart = null;
-        });
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }, { passive: true });
 
-        // Keyboard navigation
+        window.addEventListener('touchend', (e) => {
+            const endX = e.changedTouches[0].clientX;
+            const endY = e.changedTouches[0].clientY;
+            const deltaX = startX - endX;
+            const deltaY = startY - endY;
+            if (Math.abs(deltaX) > 50 || Math.abs(deltaY) > 50) {
+                navigate(Math.abs(deltaX) > Math.abs(deltaY) ? (deltaX > 0 ? 1 : -1) : (deltaY > 0 ? 1 : -1));
+            }
+        }, { passive: true });
+
+        // Keyboard
         window.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') navigate(1);
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+            if (['ArrowRight', 'ArrowDown', ' '].includes(e.key)) navigate(1);
+            if (['ArrowLeft', 'ArrowUp'].includes(e.key)) navigate(-1);
         });
 
         window.onload = function() {
