@@ -218,7 +218,7 @@
             },
             {
                 id: 8,
-                title: "Модель взаимодействия",
+                title: "Роли",
                 subtitle: "Кто за что отвечает",
                 type: "roles",
                 items: [
@@ -401,7 +401,7 @@
                     { i: "user-check", t: "AI Executives (Директора по ИИ)" },
                     { i: "code-2", t: "AI Engineers (Разработчики)" },
                     { i: "terminal", t: "AI Automation (Автоматизаторы)" },
-                    { i: "box", t: "AI Product (Продакт-менеджеры)" }
+                    { i: "box", t: "AI Product Engineer (Продакт-инженеры)" }
                 ]
             },
             {
@@ -440,7 +440,7 @@
             },
             {
                 id: 28,
-                title: "Экономический эффект",
+                title: "Финансовый эффект",
                 subtitle: "Что получает бизнес",
                 type: "table",
                 items: [
