@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ИИ-трансформация с AISALA AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+        
+        * { 
+            touch-action: none; 
+            -webkit-tap-highlight-color: transparent; 
+            box-sizing: border-box;
+        } 
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            background-color: #F8FAFC;
+            color: #0F172A;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .slide-enter { 
+            opacity: 0; 
+            transform: scale(0.99) translateY(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease; 
+        }
+        .slide-active { 
+            opacity: 1; 
+            transform: scale(1) translateY(0);
+        }
+        
+        #avatar-mobile { z-index: 999; }
+        
+        #fixed-bg-image {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 45%;
+            height: 100%;
+            background-image: url('https://i.ibb.co/LXWLn6Wc/Chat-GPT-Image-Feb-2-2026-04-07-42-PM.png');
+            background-size: cover;
+            background-position: center 15%;
+            filter: brightness(1.03);
+            z-index: 10;
+        }
+
+        #slide-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-top: clamp(3rem, 8vh, 6rem); 
+            padding-bottom: clamp(1rem, 4vh, 3rem);
+            overflow: hidden;
+        }
+
+        @media (min-width: 1024px) {
+            #slide-container {
+                width: 55%;
+                padding-left: 6rem;
+                padding-right: 4rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            #fixed-bg-image { display: none; }
+            #slide-container { width: 100% !important; padding-left: 1.5rem; padding-right: 1.5rem; }
+        }
+
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: auto;
+            max-height: 100%;
+            width: 100%;
+        }
+
+        .scroll-area {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5vh;
+        }
+
+        .card-text {
+            hyphens: auto;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+    </style>
+</head>
+<body class="select-none">
+
+    <!-- Header Logo -->
+    <div class="absolute top-5 left-6 md:top-10 md:left-12 z-[300] flex items-center gap-2 pointer-events-none">
+        <div class="w-5 h-5 bg-[#6FEAD1] rounded-full shadow-sm"></div>
+        <span class="font-black text-xl md:text-3xl tracking-tighter uppercase leading-none">AISALA AI</span>
+    </div>
+
+    <!-- Mobile Floating Avatar -->
+    <div id="avatar-mobile" class="lg:hidden fixed bottom-8 right-8 pointer-events-none">
+        <div class="w-[18vh] h-[18vh] max-w-[140px] max-h-[140px] rounded-full overflow-hidden bg-[#6FEAD1] shadow-2xl">
+            <img src="https://i.ibb.co/LXWLn6Wc/Chat-GPT-Image-Feb-2-2026-04-07-42-PM.png" class="w-full h-full object-cover" style="object-position: center 8%;" alt="Avatar">
+        </div>
+    </div>
+
+    <!-- Desktop Background -->
+    <div id="fixed-bg-image" class="hidden lg:block"></div>
+
+    <!-- Main Content Wrapper -->
+    <main id="slide-container">
+    </main>
+
+    <script>
+        const MINT_COLOR = '#6FEAD1';
+        const STATIC_IMAGE_URL = "https://i.ibb.co/LXWLn6Wc/Chat-GPT-Image-Feb-2-2026-04-07-42-PM.png";
+
+        function createFavicon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32; canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            ctx.beginPath(); ctx.arc(16, 16, 16, 0, Math.PI * 2);
+            ctx.fillStyle = MINT_COLOR; ctx.fill();
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = STATIC_IMAGE_URL;
+            img.onload = function() {
+                ctx.save(); ctx.beginPath(); ctx.arc(16, 16, 14, 0, Math.PI * 2); ctx.clip();
+                ctx.drawImage(img, -5, 0, 42, 42); ctx.restore();
+                const link = document.createElement('link');
+                link.rel = 'icon'; link.href = canvas.toDataURL();
+                document.head.appendChild(link);
+            };
+        }
+
+        const slides = [
+            {
+                id: 1,
+                title: `<div class="leading-[0.85] font-black uppercase text-left">AI-FIRST<br/><span class="text-[0.72em]">Будущее вашего бизнеса</span></div>`,
+                subtitle: `ИИ-трансформация корпоративного сектора`,
+                isHero: true,
+                content: `<div class="mt-4 md:mt-8 w-full flex justify-center"><div class="h-2 w-32 bg-[#6FEAD1] rounded-full shadow-sm"></div></div>`
+            },
+            {
+                id: 2,
+                title: "AI-First Компания",
+                subtitle: "Новая парадигма эффективности",
+                items: [
+                    { i: "sparkles", t: "Масштабируемость без роста ФОТ" },
+                    { i: "zap", t: "Принятие решений на основе данных 24/7" },
+                    { i: "shield-check", t: "Цифровая устойчивость и лидерство" }
+                ]
+            },
+            {
+                id: 3,
+                title: "Ключевая идея",
+                subtitle: "Мы строим новую модель прибыли",
+                items: [
+                    { i: "cpu", t: "ИИ становится главной производительной силой" },
+                    { i: "trending-up", t: "Эффективность больше не масштабируется людьми" },
+                    { i: "landmark", t: "Бизнес — главный бенефициар ИИ-революции" }
+                ]
+            },
+            {
+                id: 4,
+                title: "Глобальный контекст",
+                subtitle: "AI-First или отставание",
+                items: [
+                    { i: "globe", t: "ИИ = базовая инфраструктура компании" },
+                    { i: "trending-up", t: "Отсутствие ИИ = потеря рыночной доли" },
+                    { i: "shield-check", t: "Лидерство невозможно без собственного ИИ" }
+                ]
+            },
+            {
+                id: 5,
+                title: "Проблема сегодня",
+                subtitle: "ИТ-системы не дают прорыва",
+                type: "problems",
+                items: [
+                    "Автоматизация устаревших процессов",
+                    "Разрозненные данные внутри отделов",
+                    "Нет единой ИИ-стратегии компании",
+                    "Критический дефицит компетенций",
+                    "Бесконечные пилоты без внедрения"
+                ]
+            },
+            {
+                id: 6,
+                title: "Целевая модель",
+                subtitle: "Интеллектуальная организация",
+                type: "comparison",
+                items: [
+                    { f: "Ручные процессы", t: "ИИ-агенты", i: "bot" },
+                    { f: "Хаос в данных", t: "ИИ-платформа", i: "database" },
+                    { f: "Перегрузка команд", t: "Команда + ИИ", i: "user-plus" },
+                    { f: "Медленные отчеты", t: "Real-time аналитика", i: "cpu" }
+                ]
+            },
+            {
+                id: 7,
+                title: "Кто мы",
+                subtitle: "AISALA AI",
+                items: [
+                    { i: "landmark", t: "Ваш партнер в ИИ-трансформации" },
+                    { i: "globe", t: "Глубокая экспертиза в автоматизации" },
+                    { i: "shield-check", t: "Безопасное внедрение и локализация" },
+                    { i: "cpu", t: "Строим частную ИИ-инфраструктуру" }
+                ],
+                footer: "Ваши данные и модели — под вашим контролем"
+            },
+            {
+                id: 8,
+                title: "Модель взаимодействия",
+                subtitle: "Кто за что отвечает",
+                type: "roles",
+                items: [
+                    { s: "Ваша компания", r: "Владелец стратегии, данных и бизнес-целей" },
+                    { s: "AISALA AI", r: "Архитектор, интегратор и оператор систем" },
+                    { s: "ИИ-Платформа", r: "Инструмент исполнения и оптимизации" }
+                ]
+            },
+            {
+                id: 9,
+                title: "Онбординг",
+                subtitle: "Запуск изменений",
+                items: [
+                    { i: "users", t: "Установочная сессия с топ-менеджментом" },
+                    { i: "eye", t: "Синхронизация видения возможностей ИИ" },
+                    { i: "target", t: "Выбор приоритетных бизнес-целей" }
+                ],
+                footer: "Результат: дорожная карта внедрения"
+            },
+            {
+                id: 10,
+                title: "Диагностика",
+                subtitle: "Аудит ИИ-потенциала",
+                items: [
+                    { i: "search", t: "Анализ цепочки создания ценности" },
+                    { i: "file-text", t: "Выявление узких мест (AS-IS)" },
+                    { i: "layout", t: "Целевая архитектура (TO-BE)" },
+                    { i: "bar-chart-3", t: "Расчет потенциального ROI" }
+                ],
+                footer: "Результат: стратегия ИИ-трансформации"
+            },
+            {
+                id: 11,
+                title: "Стратегия",
+                subtitle: "Ваш AI-Playbook",
+                items: [
+                    { i: "bar-chart-3", t: "SWOT-анализ текущих процессов" },
+                    { i: "target", t: "Тактический план (3–6 месяцев)" },
+                    { i: "rocket", t: "Стратегические ИИ-проекты" },
+                    { i: "trending-up", t: "Прогноз экономического эффекта" }
+                ],
+                footer: "Полный план действий для бизнеса"
+            },
+            {
+                id: 12,
+                title: "Быстрые победы",
+                subtitle: "Первые 90 дней",
+                items: [
+                    { i: "user-check", t: "ИИ-ассистенты для ключевых отделов" },
+                    { i: "message-square", t: "Автоматизация поддержки и продаж" },
+                    { i: "zap", t: "Оптимизация 1-3 рутинных процессов" }
+                ],
+                footer: "Результат: измеримый рост прибыли"
+            },
+            {
+                id: 13,
+                title: "ИИ-платформа",
+                subtitle: "Ядро компании",
+                items: [
+                    { i: "layers", t: "Мультимодальные модели под задачи" },
+                    { i: "database", t: "Корпоративная база знаний (RAG)" },
+                    { i: "plug", t: "Интеграция с CRM, ERP и базами данных" },
+                    { i: "terminal", t: "Автономное выполнение действий" },
+                    { i: "code-2", t: "Масштабирование на всю компанию" }
+                ]
+            },
+            {
+                id: 14,
+                title: "ИИ-сотрудники",
+                subtitle: "Цифровая рабочая сила",
+                type: "grid_employees_5x2",
+                items: ["Менеджмент", "HR", "SMM", "Маркетинг", "Продажи", "Поддержка", "Аналитика", "Дизайн", "Разработка", "Инженерия"]
+            },
+            {
+                id: 15,
+                title: "Агент-менеджер",
+                subtitle: "ИИ-ассистент руководителя",
+                items: [
+                    { i: "clock", t: "Управление графиком и заметками" },
+                    { i: "message-square", t: "Подготовка черновиков и ответов" },
+                    { i: "file-text", t: "Саммари встреч и документов" },
+                    { i: "target", t: "Контроль исполнения задач" }
+                ]
+            },
+            {
+                id: 16,
+                title: "HR-агент",
+                subtitle: "Автоматизация найма",
+                items: [
+                    { i: "search", t: "Умный скрининг кандидатов" },
+                    { i: "users", t: "Автоматические интервью 1-го уровня" },
+                    { i: "user-check", t: "Бесшовный онбординг новичков" },
+                    { i: "heart", t: "Оценка вовлеченности персонала" }
+                ]
+            },
+            {
+                id: 17,
+                title: "SMM-агент",
+                subtitle: "Генерация контента",
+                items: [
+                    { i: "tv", t: "Анализ трендов и конкурентов" },
+                    { i: "clipboard-check", t: "Планирование и публикация" },
+                    { i: "sparkles", t: "Создание текстов и креативов" },
+                    { i: "message-square", t: "Ответы в комментариях 24/7" }
+                ]
+            },
+            {
+                id: 18,
+                title: "Консультации",
+                subtitle: "Экспертная поддержка",
+                type: "table",
+                items: [
+                    { t: "AI Стратегическая сессия", d: "1 день" },
+                    { t: "Аудит процессов", d: "1 неделя" },
+                    { t: "Управление изменениями", d: "1 месяц" },
+                    { t: "Кастомные исследования", d: "Заказ" }
+                ]
+            },
+            {
+                id: 19,
+                title: "Обучение",
+                subtitle: "Развитие команд",
+                type: "table",
+                items: [
+                    { t: "AI Executive Day", d: "Топ-менеджмент" },
+                    { t: "AI Product Hackathon", d: "Продуктологи" },
+                    { t: "AI Automation Bootcamp", d: "Операционисты" },
+                    { t: "AI Engineering", d: "Разработчики" }
+                ]
+            },
+            {
+                id: 20,
+                title: "AI Executive Day",
+                subtitle: "Для лидеров бизнеса",
+                items: [
+                    { i: "user-check", t: "Роль CEO в AI-First мире" },
+                    { i: "target", t: "Принятие решений с помощью ИИ" },
+                    { i: "alert-circle", t: "Риски, этика и безопасность" },
+                    { i: "sparkles", t: "Практические кейсы вашей ниши" }
+                ]
+            },
+            {
+                id: 21,
+                title: "AI Automation Bootcamp",
+                subtitle: "Практика внедрения",
+                items: [
+                    { i: "layout", t: "Моделирование процессов компании" },
+                    { i: "cpu", t: "Проектирование бизнес-агентов" },
+                    { i: "database", t: "Работа с корпоративными данными" },
+                    { i: "trending-up", t: "Расчет и замер бизнес-эффекта" }
+                ]
+            },
+            {
+                id: 22,
+                title: "AI Product Hackathon",
+                subtitle: "Создание сервисов",
+                items: [
+                    { i: "users", t: "Исследование болей клиентов" },
+                    { i: "lightbulb", t: "Прототипирование ИИ-продуктов" },
+                    { i: "zap", t: "Быстрая разработка MVP" },
+                    { i: "search", t: "Проверка гипотез на рынке" }
+                ]
+            },
+            {
+                id: 23,
+                title: "AI Engineer Program",
+                subtitle: "Собственная команда",
+                items: [
+                    { i: "layers", t: "Архитектура ИИ-решений" },
+                    { i: "code-2", t: "Обучение локальных моделей" },
+                    { i: "terminal", t: "MLOps и системный аудит" },
+                    { i: "lock", t: "Информационная безопасность" }
+                ]
+            },
+            {
+                id: 24,
+                title: "ИИ-таланты",
+                subtitle: "Формирование AI-отдела",
+                items: [
+                    { i: "user-check", t: "AI Executives (Директора по ИИ)" },
+                    { i: "code-2", t: "AI Engineers (Разработчики)" },
+                    { i: "terminal", t: "AI Automation (Автоматизаторы)" },
+                    { i: "box", t: "AI Product (Продакт-менеджеры)" }
+                ]
+            },
+            {
+                id: 25,
+                title: "AI Executives",
+                subtitle: "Управление ИИ-повесткой",
+                items: [
+                    { i: "search", t: "Анализ и трансформация бизнеса" },
+                    { i: "target", t: "Управление портфелем ИИ-проектов" },
+                    { i: "pie-chart", t: "Приоритизация внедрений" },
+                    { i: "trending-up", t: "Контроль возврата инвестиций" }
+                ]
+            },
+            {
+                id: 26,
+                title: "AI Automation Engineer",
+                subtitle: "Интеграция ИИ",
+                items: [
+                    { i: "layout", t: "Дизайн автоматизированных цепочек" },
+                    { i: "cpu", t: "Настройка и обучение агентов" },
+                    { i: "zap", t: "Внедрение в рабочие процессы" },
+                    { i: "bar-chart-3", t: "Мониторинг эффективности" }
+                ],
+                footer: "Снимаем до 70% рутинной нагрузки"
+            },
+            {
+                id: 27,
+                title: "AI Product Engineer",
+                subtitle: "Клиентский опыт",
+                items: [
+                    { i: "search", t: "Глубокий анализ нужд клиентов" },
+                    { i: "layout", t: "Проектирование UX с ИИ" },
+                    { i: "code-2", t: "Разработка фронт-энд решений" },
+                    { i: "bar-chart-3", t: "Аналитика вовлеченности" }
+                ]
+            },
+            {
+                id: 28,
+                title: "Экономический эффект",
+                subtitle: "Что получает бизнес",
+                type: "table",
+                items: [
+                    { t: "Себестоимость процессов", d: "−30–50%" },
+                    { t: "Скорость обслуживания", d: "−60–80%" },
+                    { t: "Точность прогнозирования", d: "+40–90%" },
+                    { t: "Маржинальность бизнеса", d: "+15–25%" }
+                ]
+            },
+            {
+                id: 29,
+                title: "Безопасность",
+                subtitle: "Защита интеллектуальной собственности",
+                items: [
+                    { i: "shield", t: "Данные не покидают периметр компании" },
+                    { i: "cpu", t: "Работа с On-premise моделями" },
+                    { i: "lock", t: "Полное логирование и аудит" },
+                    { i: "user-check", t: "Контроль прав доступа к данным" }
+                ]
+            },
+            {
+                id: 30,
+                title: "Дальнейшие шаги",
+                subtitle: "План на ближайшее время",
+                items: [
+                    { i: "search", t: "Проведение ИИ-диагностики" },
+                    { i: "zap", t: "Внедрение первых ассистентов" },
+                    { i: "settings", t: "Обучение ключевой команды" },
+                    { i: "rocket", t: "Запуск пилотного проекта" }
+                ]
+            },
+            {
+                id: 31,
+                type: "last",
+                title: `<div class="leading-[1.1] font-black uppercase text-center w-full block"><span class="block mb-2 md:mb-4">AI-First Компания —</span><span class="text-[#6FEAD1]">лидер новой экономики</span></div>`,
+                subtitle: `<div class="text-center w-full block text-slate-400 font-bold uppercase tracking-widest text-lg md:text-2xl mt-2">Будущее начинается сегодня</div>`,
+                items: [
+                    { i: "trending-up", t: "Рост прибыли" },
+                    { i: "target", t: "Качество управления" },
+                    { i: "users", t: "Инновационная культура" },
+                    { i: "shield-check", t: "Цифровое лидерство" }
+                ]
+            }
+        ];
+
+        let currentSlideIndex = 0;
+        let isNavigating = false;
+
+        function renderSlide() {
+            const slide = slides[currentSlideIndex];
+            const isHero = currentSlideIndex === 0;
+            const isLast = slide.type === 'last';
+            const container = document.getElementById('slide-container');
+
+            container.innerHTML = '';
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = `content-wrapper ${isLast ? 'items-center text-center' : 'items-start text-left'} slide-enter slide-active`;
+            
+            const title = document.createElement('h1');
+            title.className = `font-black uppercase leading-[0.92] tracking-tight mb-[1.5vh] 
+                ${isHero ? 'text-[clamp(2.5rem,8.5vh,5.5rem)] lg:text-[clamp(4.5rem,10vh,6rem)]' : 
+                  isLast ? 'text-[clamp(1.8rem,6.5vh,3rem)] lg:text-[clamp(2.5rem,7vh,4.5rem)]' : 
+                  'text-[clamp(1.8rem,5vh,2.8rem)] lg:text-[clamp(2.2rem,6vh,3.8rem)]'}`;
+            title.innerHTML = slide.title;
+            wrapper.appendChild(title);
+
+            const subtitle = document.createElement('h2');
+            subtitle.className = `font-bold uppercase tracking-tight mb-[3vh]
+                ${isHero ? 'text-[clamp(1.2rem,3vh,2.2rem)] lg:text-[clamp(1.6rem,3.5vh,2.8rem)] text-[#6FEAD1]' : 
+                  isLast ? 'hidden' : 
+                  'text-[clamp(1rem,2.5vh,1.6rem)] lg:text-[clamp(1.2rem,3vh,2rem)] text-[#6FEAD1]'}`;
+            subtitle.innerHTML = slide.subtitle;
+            wrapper.appendChild(subtitle);
+
+            const scrollArea = document.createElement('div');
+            scrollArea.className = `scroll-area w-full ${isLast ? 'items-center' : ''}`;
+            
+            if (slide.content) {
+                const extra = document.createElement('div');
+                extra.className = "w-full";
+                extra.innerHTML = slide.content;
+                scrollArea.appendChild(extra);
+            }
+
+            if (slide.type === 'case_hub') {
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-2 md:grid-cols-4 gap-[1.5vh] w-full';
+                slide.cases.forEach(c => {
+                    grid.innerHTML += `
+                        <div class="bg-white p-[2.2vh] rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center gap-[1vh] item-card h-full min-h-[14vh]">
+                            <i data-lucide="${c.i}" style="width: clamp(24px, 4vh, 48px); height: clamp(24px, 4vh, 48px)" class="text-[#6FEAD1] shrink-0"></i>
+                            <span class="font-bold text-slate-700 text-[clamp(9px, 1.4vh, 16px)] uppercase tracking-wider leading-tight text-center card-text w-full">${c.n}</span>
+                        </div>`;
+                });
+                scrollArea.appendChild(grid);
+            } else if (slide.type === 'grid_employees_5x2') {
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-2 grid-rows-5 gap-[1.2vh] w-full';
+                slide.items.forEach(t => {
+                    grid.innerHTML += `
+                        <div class="bg-white py-[1.8vh] px-3 rounded-xl border border-slate-100 shadow-sm font-black text-center text-[clamp(11px, 1.8vh, 18px)] text-slate-500 uppercase tracking-widest leading-none flex items-center justify-center min-h-[5.5vh] item-card">
+                            ${t}
+                        </div>`;
+                });
+                scrollArea.appendChild(grid);
+            } else if (slide.type === 'comparison') {
+                const comp = document.createElement('div');
+                comp.className = 'space-y-[1.5vh] w-full';
+                comp.innerHTML = `<div class="grid grid-cols-2 gap-4 text-[clamp(9px, 1.5vh, 15px)] uppercase font-black text-slate-400 px-1 text-center mb-1"><span>Было</span><span>Становится</span></div>`;
+                slide.items.forEach(item => {
+                    comp.innerHTML += `
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="flex items-center justify-center p-[1.8vh] bg-slate-100 text-slate-400 rounded-xl font-semibold italic text-center text-[clamp(13px, 2.2vh, 20px)] leading-tight item-card">${item.f}</div>
+                            <div class="flex items-center justify-center gap-2 p-[1.8vh] bg-[#0F172A] text-[#6FEAD1] rounded-xl font-bold shadow-lg text-center text-[clamp(13px, 2.2vh, 20px)] leading-tight item-card">
+                                <i data-lucide="${item.i}" style="width: 2.5vh; height: 2.5vh"></i> <span class="ml-1">${item.t}</span>
+                            </div>
+                        </div>`;
+                });
+                scrollArea.appendChild(comp);
+            } else if (slide.type === 'problems') {
+                slide.items.forEach(text => {
+                    scrollArea.innerHTML += `
+                        <div class="flex items-center gap-5 p-[2vh] bg-red-50 text-red-700 rounded-2xl font-bold border border-red-100 italic text-[clamp(15px, 2.4vh, 24px)] w-full item-card">
+                            <i data-lucide="alert-circle" style="width: 3.2vh; height: 3.2vh" class="shrink-0"></i>
+                            <span class="leading-tight">${text}</span>
+                        </div>`;
+                });
+            } else if (slide.type === 'roles') {
+                slide.items.forEach(item => {
+                    scrollArea.innerHTML += `
+                        <div class="bg-white p-[2.2vh] rounded-2xl border-l-[10px] border-[#6FEAD1] shadow-sm w-full text-left item-card">
+                            <div class="font-black text-[#0F172A] text-[clamp(11px, 1.8vh, 20px)] uppercase mb-1">${item.s}</div>
+                            <div class="font-semibold text-slate-500 text-[clamp(15px, 2.6vh, 26px)] leading-snug">${item.r}</div>
+                        </div>`;
+                });
+            } else if (slide.type === 'table') {
+                const table = document.createElement('div');
+                table.className = 'w-full space-y-[1.2vh]';
+                slide.items.forEach(item => {
+                    table.innerHTML += `
+                        <div class="flex justify-between items-center bg-white p-[2.2vh] md:p-[2.8vh] rounded-2xl border border-slate-100 shadow-sm item-card">
+                            <span class="font-bold text-slate-700 text-[clamp(15px, 2.6vh, 26px)]">${item.t}</span>
+                            <span class="text-[#6FEAD1] font-black text-[clamp(13px, 2.4vh, 22px)] uppercase leading-none pl-4">${item.d}</span>
+                        </div>`;
+                });
+                scrollArea.appendChild(table);
+            } else if (slide.type === 'last') {
+                const tags = document.createElement('div');
+                tags.className = 'flex flex-wrap justify-center gap-[2vh] mt-4 mb-4 md:mb-0 max-w-2xl';
+                slide.items.forEach(item => {
+                    tags.innerHTML += `
+                        <div class="flex items-center gap-3 bg-white px-[2.5vh] py-[1.5vh] rounded-full shadow-lg border border-slate-50 item-card">
+                            <i data-lucide="${item.i}" style="width: 2.2vh; height: 2.2vh" class="text-[#6FEAD1] shrink-0"></i>
+                            <span class="font-black text-slate-400 uppercase tracking-widest text-[clamp(10px, 1.4vh, 16px)] leading-none">${item.t}</span>
+                        </div>`;
+                });
+                scrollArea.appendChild(tags);
+            } else if (slide.items) {
+                slide.items.forEach(item => {
+                    scrollArea.innerHTML += `
+                        <div class="flex items-center bg-white rounded-2xl shadow-sm border border-slate-100/50 py-[2vh] px-[3.5vh] gap-6 w-full item-card">
+                            <i data-lucide="${item.i}" style="width: 3.2vh; height: 3.2vh" class="text-[#6FEAD1] shrink-0"></i>
+                            <span class="font-semibold text-slate-700 leading-tight text-[clamp(15px, 2.6vh, 28px)]">${item.t}</span>
+                        </div>`;
+                });
+            }
+
+            if (slide.footer && !isHero && !isLast) {
+                const footer = document.createElement('div');
+                footer.className = "mt-[2.5vh] p-[2.2vh] bg-[#0F172A] rounded-2xl font-bold text-[clamp(13px, 2.4vh, 22px)] text-white shadow-xl self-start border-l-4 border-[#6FEAD1] item-card";
+                footer.innerHTML = slide.footer;
+                scrollArea.appendChild(footer);
+            }
+
+            wrapper.appendChild(scrollArea);
+            container.appendChild(wrapper);
+            lucide.createIcons();
+        }
+
+        function navigate(dir) {
+            if (isNavigating) return;
+            const newIndex = currentSlideIndex + dir;
+            if (newIndex >= 0 && newIndex < slides.length) {
+                isNavigating = true;
+                currentSlideIndex = newIndex;
+                renderSlide();
+                setTimeout(() => { isNavigating = false; }, 600);
+            }
+        }
+
+        window.addEventListener('click', (e) => {
+            if (e.target.closest('button')) return;
+            navigate(1);
+        });
+        
+        window.addEventListener('wheel', (e) => {
+            if (Math.abs(e.deltaY) > 15 || Math.abs(e.deltaX) > 15) {
+                navigate(e.deltaY > 0 || e.deltaX > 0 ? 1 : -1);
+            }
+        }, { passive: true });
+
+        let startX = 0, startY = 0;
+        window.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+        }, { passive: true });
+
+        window.addEventListener('touchend', (e) => {
+            const endX = e.changedTouches[0].clientX; const endY = e.changedTouches[0].clientY;
+            const deltaX = startX - endX; const deltaY = startY - endY;
+            if (Math.abs(deltaX) > 40 || Math.abs(deltaY) > 40) {
+                navigate(Math.abs(deltaX) > Math.abs(deltaY) ? (deltaX > 0 ? 1 : -1) : (deltaY > 0 ? 1 : -1));
+            }
+        }, { passive: true });
+
+        window.addEventListener('keydown', (e) => {
+            if (['ArrowRight', 'ArrowDown', ' '].includes(e.key)) navigate(1);
+            if (['ArrowLeft', 'ArrowUp'].includes(e.key)) navigate(-1);
+        });
+
+        window.onload = function() { createFavicon(); renderSlide(); };
+    </script>
+</body>
+</html>
