@@ -4,10 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ИИ-трансформация с AISALA AI</title>
+    
+    <!-- Telegram WebApp Script -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Vimeo Player API -->
     <script src="https://player.vimeo.com/api/player.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
@@ -23,17 +32,21 @@
             background-color: #F8FAFC;
             color: #0F172A;
             width: 100vw;
+            /* FIX: Используем dvh для корректной высоты с учетом интерфейса Telegram */
             height: 100dvh;
             margin: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
+        /* Анимации */
         .slide-enter { 
             opacity: 0; 
             transform: translateY(15px);
-            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
+            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
         }
         .slide-active { 
             opacity: 1; 
@@ -41,32 +54,35 @@
         }
 
         .fade-out {
-            opacity: 0;
+            opacity: 0 !important;
             pointer-events: none;
             transition: opacity 0.5s ease;
         }
         
+        /* --- Стили Кружка с Видео --- */
         #video-container {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 130px;
-            height: 130px;
+            bottom: clamp(1.5rem, 5vh, 3rem);
+            right: clamp(1.5rem, 5vw, 4rem);
+            width: clamp(140px, 22vw, 280px);
+            height: clamp(140px, 22vw, 280px);
             border-radius: 50%;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+            mask-image: radial-gradient(white, black);
             overflow: hidden;
             z-index: 50;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             background: #000;
+            transition: all 0.3s ease;
             transform: translateZ(0);
-            border: 2px solid white;
         }
 
-        @media (min-width: 768px) {
+        @media (max-width: 768px) {
             #video-container {
-                width: 220px;
-                height: 220px;
-                bottom: 40px;
-                right: 40px;
+                width: 130px;
+                height: 130px;
+                bottom: 20px;
+                right: 20px;
             }
         }
 
@@ -74,7 +90,7 @@
             width: 100%;
             height: 100%;
             position: relative;
-            transform: scale(1.6); /* Увеличил зум, чтобы лучше вписать в круг */
+            transform: scale(1.15); 
             transform-origin: center center;
             pointer-events: none;
         }
@@ -85,39 +101,49 @@
             position: absolute;
             top: 0; left: 0;
             object-fit: cover;
+            pointer-events: auto;
         }
 
+        /* --- Лейаут Контейнера Слайдов --- */
         #slide-container {
-            height: 100%;
+            flex: 1;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+            /* FIX: Выровненные отступы для точного центрирования */
+            padding-top: 90px;
+            padding-bottom: 100px;
+            padding-left: clamp(1.5rem, 6vw, 4rem);
+            padding-right: clamp(1.5rem, 6vw, 4rem);
+            
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            padding: 2rem;
-            padding-bottom: 160px; /* Отступ под кружок на мобилках */
-            position: relative;
-            z-index: 10;
+            align-items: center; /* Центрируем слайд внутри контейнера */
         }
 
         @media (min-width: 1024px) {
             #slide-container {
-                width: 60%; 
-                padding-left: 10%;
-                padding-bottom: 2rem;
+                /* На десктопе сдвигаем контент чуть левее, чтобы не перекрывать видео */
+                padding-right: clamp(2rem, 10vw, 8rem); 
+                align-items: flex-start;
+                width: 75%;
             }
         }
 
         .item-card {
             background: white;
             border: 1px solid #F1F5F9;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
         }
         
+        /* Прогресс бар */
         .progress-container {
             position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
             width: 100%;
-            height: 4px;
+            height: 6px;
             background: #E2E8F0;
             z-index: 100;
         }
@@ -125,50 +151,65 @@
             height: 100%;
             background: #6FEAD1;
             width: 0%;
+            transition: width 0.1s linear;
         }
     </style>
 </head>
-<body class="select-none text-slate-800">
+<body class="select-none text-slate-800 bg-[#F8FAFC]">
 
+    <!-- Прогресс видео -->
     <div class="progress-container">
         <div id="progress" class="progress-bar"></div>
     </div>
 
-    <div class="absolute top-6 left-6 z-[40] flex items-center gap-3">
-        <div class="w-6 h-6 bg-[#6FEAD1] rounded-full shadow-sm"></div>
-        <span class="font-black text-xl tracking-tighter uppercase text-[#0F172A]">AISALA AI</span>
+    <!-- Логотип -->
+    <div class="fixed top-6 left-6 md:top-10 md:left-12 z-[40] flex items-center gap-3 pointer-events-none">
+        <div class="w-6 h-6 md:w-8 md:h-8 bg-[#6FEAD1] rounded-full shadow-sm flex items-center justify-center"></div>
+        <span class="font-black text-xl md:text-2xl tracking-tighter uppercase leading-none text-[#0F172A]">AISALA AI</span>
     </div>
 
-    <div class="fixed bottom-8 left-6 z-[60] flex gap-3">
-        <button onclick="navigate(-1)" class="p-4 bg-white/90 backdrop-blur rounded-full shadow-xl border border-slate-100 active:scale-90 transition-all">
-            <i data-lucide="arrow-left" class="w-6 h-6 text-slate-700"></i>
+    <!-- Навигация -->
+    <div class="fixed bottom-8 left-6 z-[45] flex gap-3 md:bottom-12 md:left-12 opacity-90">
+        <button onclick="navigate(-1)" class="p-4 bg-white rounded-full shadow-lg border border-slate-100 hover:bg-slate-50 active:scale-95 transition-all group" aria-label="Назад">
+            <i data-lucide="arrow-left" class="w-6 h-6 text-slate-700 group-hover:-translate-x-1 transition-transform"></i>
         </button>
-        <button onclick="navigate(1)" class="p-4 bg-white/90 backdrop-blur rounded-full shadow-xl border border-slate-100 active:scale-90 transition-all">
-            <i data-lucide="arrow-right" class="w-6 h-6 text-slate-700"></i>
+        <button onclick="navigate(1)" class="p-4 bg-white rounded-full shadow-lg border border-slate-100 hover:bg-slate-50 active:scale-95 transition-all group" aria-label="Вперед">
+            <i data-lucide="arrow-right" class="w-6 h-6 text-slate-700 group-hover:translate-x-1 transition-transform"></i>
         </button>
     </div>
 
+    <!-- Видео в кружке -->
     <div id="video-container">
-        <div class="absolute inset-0 z-30 cursor-pointer" onclick="togglePlay()"></div>
+        <div class="absolute inset-0 z-20 cursor-pointer" onclick="togglePlay()"></div>
         <div class="video-wrapper">
             <iframe 
-                id="vimeo-player"
-                src="https://player.vimeo.com/video/1164582477?badge=0&autopause=0&player_id=0&app_id=58479&background=1&playsinline=1&muted=1" 
+                src="https://player.vimeo.com/video/1164582477?badge=0&autopause=0&player_id=0&app_id=58479&controls=0&playsinline=1&autoplay=0&muted=0" 
                 frameborder="0" 
-                allow="autoplay; fullscreen; picture-in-picture" 
-                title="AISALA Presentation">
+                allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer" 
+                playsinline 
+                webkit-playsinline
+                title="AISALA Presentation"
+                id="vimeo-player">
             </iframe>
         </div>
     </div>
 
-    <main id="slide-container"></main>
+    <!-- Контейнер слайдов -->
+    <main id="slide-container">
+        <!-- Контент -->
+    </main>
 
     <script>
-        // Инициализация Telegram
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.ready();
-            tg.expand();
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            try {
+                window.Telegram.WebApp.expand();
+                window.Telegram.WebApp.enableClosingConfirmation();
+                window.Telegram.WebApp.setHeaderColor('#F8FAFC');
+                window.Telegram.WebApp.setBackgroundColor('#F8FAFC');
+            } catch (e) {
+                console.log('TG WebApp init error:', e);
+            }
         }
 
         const slides = [
@@ -178,116 +219,409 @@
                 subtitle: "AI-трансформация бизнеса",
                 isHero: true,
                 content: `
-                    <div class="mt-8">
-                        <button id="start-btn" onclick="startExperience()" class="bg-[#0F172A] text-white font-bold py-5 px-10 rounded-full text-xl shadow-2xl flex items-center gap-4 active:scale-95 transition-all">
-                            <i data-lucide="play" class="fill-current w-6 h-6"></i>
-                            <span>Смотреть</span>
+                    <div class="flex flex-col items-center gap-0 w-full mt-4">
+                        <button id="start-btn" onclick="startExperience()" class="group bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold py-4 px-8 md:py-5 md:px-10 rounded-full text-lg md:text-xl transition-all transform hover:scale-105 shadow-[0_10px_25px_-5px_rgba(15,23,42,0.3)] flex items-center gap-4 relative overflow-hidden active:scale-95">
+                            <span class="absolute inset-0 bg-[#6FEAD1] opacity-0 group-hover:opacity-1 transition-opacity"></span>
+                            <div class="bg-[#6FEAD1] text-[#0F172A] p-2 rounded-full">
+                                <i data-lucide="play" class="fill-current w-5 h-5 ml-1"></i>
+                            </div>
+                            <span class="relative z-10">Запустить презентацию</span>
                         </button>
+                        <p class="mt-4 text-slate-400 text-sm md:hidden">Нажмите, чтобы включить звук</p>
                     </div>
                 `
             },
             {
                 id: 2, start: 5, end: 18,
                 title: "Мир перешёл в AI-First",
-                subtitle: "Большинство компаний — нет",
-                items: [
-                    { t: "Решения принимаются медленно", i: "alert-triangle" },
-                    { t: "Масштабирование = рост ФОТ", i: "trending-down" }
-                ]
+                subtitle: "Но большинство компаний — нет",
+                content: `
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4 p-4 rounded-xl bg-red-50 text-red-900 border border-red-100">
+                            <i data-lucide="alert-triangle" class="shrink-0 mt-1"></i>
+                            <div class="font-medium text-lg leading-tight">Люди заняты операционкой, решения принимаются медленно.</div>
+                        </div>
+                        <div class="flex items-center gap-4 p-4 rounded-xl bg-white shadow-sm border border-slate-200">
+                            <div class="p-2 bg-slate-100 rounded-lg"><i data-lucide="trending-down" class="text-slate-500"></i></div>
+                            <div class="font-bold text-slate-700 text-xl">Масштабирование = рост ФОТ</div>
+                        </div>
+                        <div class="p-4 text-slate-500 font-medium italic border-l-4 border-slate-300 pl-4">
+                            "Бизнес становится дорогим и неконкурентоспособным"
+                        </div>
+                    </div>
+                `
             },
             {
                 id: 3, start: 18, end: 50,
                 title: "Что такое AI-First",
-                subtitle: "Новая парадигма",
-                content: `<div class="p-4 bg-[#6FEAD1]/10 rounded-2xl border border-[#6FEAD1]/20"><p class="text-xl font-bold">Процессы выполняют AI-сотрудники, а люди управляют ими.</p></div>`
+                subtitle: "Новая парадигма эффективности",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                            <div class="text-[#6FEAD1] mb-2"><i data-lucide="bot" class="w-8 h-8"></i></div>
+                            <div class="font-bold text-lg">Процессы выполняют <br>AI-сотрудники</div>
+                        </div>
+                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                            <div class="text-slate-400 mb-2"><i data-lucide="users" class="w-8 h-8"></i></div>
+                            <div class="font-bold text-lg text-slate-600">А люди <br>управляют ими</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                         <div class="p-2 md:p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↓ Издержки</div>
+                         <div class="p-2 md:p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↑ Скорость</div>
+                         <div class="p-2 md:p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↑ Масштаб</div>
+                         <div class="p-2 md:p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↑ Управляемость</div>
+                    </div>
+                `
+            },
+            {
+                id: 4, start: 50, end: 68,
+                title: "Точечное внедрение не работает",
+                subtitle: "Системная ошибка",
+                items: [
+                    { t: "Один AI-инструмент не меняет модель", i: "puzzle" },
+                    { t: "Если AI не встроен в процессы — эффекта нет", i: "ban" },
+                    { t: "AI должен стать частью ДНК бизнеса", i: "dna" }
+                ]
+            },
+            {
+                id: 5, start: 68, end: 78,
+                title: "Шаг 1 — Цели",
+                subtitle: "Ради влияния на экономику",
+                items: [
+                    { t: "Рост прибыли", i: "wallet" },
+                    { t: "Скорость процессов", i: "zap" },
+                    { t: "Снижение издержек", i: "arrow-down-circle" },
+                    { t: "Качество решений", i: "check-circle-2" }
+                ]
+            },
+            {
+                id: 6, start: 78, end: 96,
+                title: "Диагностика",
+                subtitle: "Аудит и стратегия",
+                items: [
+                    { t: "Аудит процессов", i: "search" },
+                    { t: "Оценка AI-зрелости", i: "bar-chart-2" },
+                    { t: "Определение новых ролей", i: "user-cog" },
+                    { t: "Стратегия внедрения", i: "map" }
+                ],
+                footer: "Быстрые эффекты + долгосрочная трансформация"
+            },
+            {
+                id: 7, start: 96, end: 111,
+                title: "AI-Платформа",
+                subtitle: "Цифровая ОС компании",
+                items: [
+                    { t: "Агрегатор нейросетей", i: "layers" },
+                    { t: "Неограниченная память", i: "hard-drive" },
+                    { t: "Интеграции с вашими данными", i: "database" },
+                    { t: "Умное управление контекстом", i: "brain-circuit" },
+                    { t: "Автоматизация задач", i: "settings-2" }
+                ]
             },
             {
                 id: 8, start: 111, end: 123,
-                title: "Сферы помощи",
-                subtitle: "Где внедрять?",
+                title: "Где помогает Айсала",
+                subtitle: "Сферы применения",
                 type: "grid",
                 items: [
+                    { t: "Менеджмент", i: "briefcase" },
                     { t: "HR", i: "users" },
                     { t: "Маркетинг", i: "megaphone" },
+                    { t: "SMM", i: "instagram" },
                     { t: "Продажи", i: "shopping-cart" },
-                    { t: "IT", i: "code" }
+                    { t: "Поддержка", i: "headphones" },
+                    { t: "Аналитика", i: "line-chart" },
+                    { t: "IT-Разработка", i: "code" }
                 ]
+            },
+            {
+                id: 9, start: 123, end: 142,
+                title: "Айсала - Бизнес-ассистент",
+                subtitle: "Ваш правая рука",
+                items: [
+                    { t: "Фиксирую заметки со встреч", i: "mic" },
+                    { t: "Формирую задачи", i: "list-todo" },
+                    { t: "Готовлю отчёты и документы", i: "file-text" },
+                    { t: "Управляю календарём", i: "calendar-clock" },
+                    { t: "Консультирую клиентов и сотрудников", i: "message-square" }
+                ]
+            },
+            {
+                id: 10, start: 142, end: 156,
+                title: "Айсала - HR",
+                subtitle: "Найм и адаптация",
+                items: [
+                    { t: "Создаю вакансии", i: "file-plus" },
+                    { t: "Ищу и провожу интервью", i: "user-search" },
+                    { t: "Организую финальную встречу", i: "calendar-check" },
+                    { t: "Провожу онбординг", i: "rocket" },
+                    { t: "Поддержка и обучение", i: "graduation-cap" }
+                ]
+            },
+            {
+                id: 11, start: 156, end: 166,
+                title: "Айсала - SMM",
+                subtitle: "Контент-машина",
+                items: [
+                    { t: "Готовлю контент-план", i: "layout-list" },
+                    { t: "Создаю посты в соцсети", i: "send" },
+                    { t: "Создаю короткие видео", i: "video" },
+                    { t: "Работаю с комментариями", i: "message-circle" },
+                    { t: "Учитываю ваш стиль", i: "palette" }
+                ]
+            },
+            {
+                id: 12, start: 166, end: 188,
+                title: "ИИ-трансформация бизнеса",
+                subtitle: "Меняем культуру",
+                items: [
+                    { t: "Стратегические сессии", i: "target" },
+                    { t: "Пересборка операционной модели", i: "refresh-cw" },
+                    { t: "Определение ролей AI и людей", i: "user-check" },
+                    { t: "Управление изменениями", i: "git-fork" }
+                ]
+            },
+            {
+                id: 13, start: 188, end: 210,
+                title: "Новая роль людей",
+                subtitle: "CEO — Архитектор системы",
+                items: [
+                    { t: "Принимает решения на основе данных", i: "bar-chart-big" },
+                    { t: "Управляет AI как активом", i: "gem" },
+                    { t: "Обучение команд AI-First модели", i: "book-open" }
+                ]
+            },
+            {
+                id: 14, start: 210, end: 218,
+                title: "Форматы работы",
+                subtitle: "Как мы сотрудничаем",
+                items: [
+                    { t: "Внедрение AI под ключ", i: "key" },
+                    { t: "Помощь в найме AI-команды", i: "user-plus" },
+                    { t: "Обучение и консультации", i: "presentation" }
+                ]
+            },
+            {
+                id: 15, start: 218, end: 260,
+                title: "Предложение",
+                subtitle: "Начните с диагностики",
+                content: `
+                    <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-[#6FEAD1] opacity-10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+                        <h3 class="text-2xl font-bold mb-6 text-[#6FEAD1]">Бесплатно:</h3>
+                        <ul class="space-y-4 mb-8">
+                            <li class="flex items-center gap-3 text-lg"><div class="p-1 bg-[#6FEAD1] rounded-full"><i data-lucide="check" class="w-4 h-4 text-slate-900"></i></div> Аудит процессов</li>
+                            <li class="flex items-center gap-3 text-lg"><div class="p-1 bg-[#6FEAD1] rounded-full"><i data-lucide="check" class="w-4 h-4 text-slate-900"></i></div> Оценка потенциала</li>
+                            <li class="flex items-center gap-3 text-lg"><div class="p-1 bg-[#6FEAD1] rounded-full"><i data-lucide="check" class="w-4 h-4 text-slate-900"></i></div> Персональная стратегия</li>
+                        </ul>
+                        <div class="pt-4 border-t border-slate-700">
+                            <p class="text-slate-300">Вы получаете ясность.</p>
+                            <p class="font-bold text-xl mt-1">Мы — возможность показать результат.</p>
+                        </div>
+                    </div>
+                `
             }
-            // ... другие слайды можно добавить по аналогии
         ];
 
         const iframe = document.getElementById('vimeo-player');
-        const player = new Vimeo.Player(iframe);
-        let currentSlideIndex = -1;
-
-        function startExperience() {
-            // Включаем звук и запускаем видео после клика
-            player.setMuted(false);
-            player.play();
-            document.getElementById('start-btn').classList.add('fade-out');
-            setTimeout(() => navigate(1), 500);
+        const slideContainer = document.getElementById('slide-container');
+        const progressBar = document.getElementById('progress');
+        
+        let player = null;
+        try {
+            player = new Vimeo.Player(iframe);
+        } catch (err) {
+            console.error('Player init error:', err);
         }
 
+        let currentSlideIndex = -1;
+        let isManualNavigating = false;
+        
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
         function togglePlay() {
-            player.getPaused().then(paused => {
-                paused ? player.play() : player.pause();
+            if (!player) return;
+            player.getPaused().then(function(paused) {
+                if (paused) {
+                    player.play().catch(e => console.error("Play Error:", e));
+                } else {
+                    player.pause();
+                }
             });
         }
 
+        function startExperience() {
+            const btn = document.getElementById('start-btn');
+            
+            if (player) {
+                player.setVolume(1).then(() => {
+                    return player.play();
+                }).then(() => {
+                    if(btn) btn.classList.add('fade-out');
+                }).catch(error => {
+                    console.error('Ошибка автовоспроизведения:', error);
+                    alert("Нажмите кнопку еще раз для запуска видео.");
+                });
+            } else {
+                if(btn) btn.style.display = 'none';
+                navigate(1);
+            }
+        }
+
         function renderSlide(index) {
-            if (index === currentSlideIndex || index < 0 || index >= slides.length) return;
+            if (index === currentSlideIndex) return;
+            if (index < 0 || index >= slides.length) return;
+
             currentSlideIndex = index;
             const slide = slides[index];
 
+            const alignmentClass = slide.isHero ? 'items-center text-center' : 'items-start text-left';
+            const justificationClass = slide.isHero ? 'justify-center' : 'justify-start';
+            
+            const titleMargin = slide.isHero ? 'mb-2' : 'mb-3';
+            const subtitleMargin = slide.isHero ? 'mb-6' : 'mb-8';
+            
+            // FIX: Убрали whitespace-pre-wrap для Hero, чтобы убрать влияние отступов кода на выравнивание
+            const titleClass = slide.isHero 
+                ? 'text-[clamp(2rem,10vw,4.5rem)] whitespace-normal' 
+                : 'text-[clamp(2rem,6vh,3.5rem)]';
+
+            const contentContainerClass = slide.isHero 
+                ? 'w-full flex justify-center' 
+                : 'flex-1 w-full min-h-0 overflow-y-auto hide-scrollbar pr-1';
+
             let html = `
-                <div class="slide-enter ${slide.isHero ? 'text-center items-center' : ''} flex flex-col gap-4">
-                    <h1 class="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-tight">${slide.title}</h1>
-                    <h2 class="text-xl md:text-2xl font-bold text-[#6FEAD1] uppercase tracking-wide">${slide.subtitle || ''}</h2>
-                    <div class="mt-4 space-y-3">
+                <div class="flex flex-col h-full w-full max-w-4xl slide-enter ${alignmentClass} ${justificationClass}">
+                    
+                    <div class="shrink-0 w-full ${slide.isHero ? 'text-center' : ''}">
+                        <h1 class="font-black uppercase leading-[1.1] tracking-tighter ${titleMargin} text-slate-900 ${titleClass} ${slide.isHero ? 'w-full block' : ''}">
+                            ${slide.title}
+                        </h1>
+                        
+                        ${slide.subtitle ? `
+                            <h2 class="font-bold uppercase tracking-tight ${subtitleMargin} text-[#6FEAD1] 
+                            ${slide.isHero ? 'text-[clamp(1.2rem,3vh,2rem)]' : 'text-[clamp(1rem,2.5vh,1.5rem)]'}">
+                                ${slide.subtitle}
+                            </h2>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="${contentContainerClass}">
             `;
 
-            if (slide.items) {
+            if (slide.content) {
+                html += slide.content;
+            } 
+            else if (slide.type === 'grid') {
+                html += `<div class="grid grid-cols-2 md:grid-cols-4 gap-3 pb-4">`;
                 slide.items.forEach(item => {
                     html += `
-                        <div class="item-card p-4 rounded-xl flex items-center gap-4">
-                            <i data-lucide="${item.i}" class="text-[#6FEAD1]"></i>
-                            <span class="font-bold text-lg">${item.t}</span>
+                        <div class="bg-white p-2 md:p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center gap-2 aspect-[4/3] item-card">
+                            <i data-lucide="${item.i}" class="w-6 h-6 md:w-8 md:h-8 text-[#6FEAD1]"></i>
+                            <span class="font-bold text-slate-700 text-xs md:text-sm uppercase leading-tight">${item.t}</span>
+                        </div>`;
+                });
+                html += `</div>`;
+            } 
+            else if (slide.items) {
+                html += `<div class="grid grid-cols-1 gap-3 pb-4">`;
+                slide.items.forEach(item => {
+                    html += `
+                        <div class="flex items-center bg-white rounded-xl shadow-sm border border-slate-100 p-3 md:p-4 gap-4 item-card group hover:border-[#6FEAD1] transition-colors">
+                            <div class="bg-slate-50 p-2 md:p-3 rounded-xl shrink-0 group-hover:bg-[#6FEAD1]/10 transition-colors">
+                                <i data-lucide="${item.i}" class="w-5 h-5 md:w-6 md:h-6 text-[#6FEAD1] group-hover:scale-110 transition-transform"></i>
+                            </div>
+                            <span class="font-bold text-slate-700 text-base md:text-lg leading-tight">${item.t}</span>
                         </div>
                     `;
                 });
+                html += `</div>`;
             }
 
-            if (slide.content) html += slide.content;
-            html += `</div></div>`;
+            if (slide.footer) {
+                html += `
+                    <div class="mt-6 pt-6 border-t border-slate-200 mb-4">
+                        <p class="font-bold text-slate-500 uppercase tracking-widest text-xs md:text-sm">${slide.footer}</p>
+                    </div>
+                `;
+            }
 
-            const container = document.getElementById('slide-container');
-            container.innerHTML = html;
-            lucide.createIcons();
+            html += `</div></div>`; 
+
+            slideContainer.innerHTML = html;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             
-            setTimeout(() => {
-                container.querySelector('.slide-enter').classList.add('slide-active');
-            }, 50);
+            const entered = slideContainer.querySelector('.slide-enter');
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if(entered) entered.classList.add('slide-active');
+                });
+            });
         }
 
-        function navigate(dir) {
-            let next = currentSlideIndex + dir;
-            if (next >= 0 && next < slides.length) {
-                renderSlide(next);
-                player.setCurrentTime(slides[next].start);
+        function navigate(direction) {
+            const newIndex = currentSlideIndex + direction;
+            if (newIndex >= 0 && newIndex < slides.length) {
+                isManualNavigating = true;
+                
+                renderSlide(newIndex);
+                
+                if (newIndex === 0) {
+                    if (player) {
+                        player.pause();
+                        player.setCurrentTime(0);
+                        const btn = document.getElementById('start-btn');
+                        if(btn) btn.classList.remove('fade-out');
+                    }
+                    setTimeout(() => { isManualNavigating = false; }, 500);
+                } else if (player) {
+                    const targetTime = slides[newIndex].start;
+                    player.setCurrentTime(targetTime).then(() => {
+                        return player.getPaused();
+                    }).then((paused) => {
+                        if (paused) player.play();
+                    }).catch(e => console.log("Nav play error", e))
+                    .finally(() => {
+                         setTimeout(() => { isManualNavigating = false; }, 1000);
+                    });
+                }
             }
         }
 
-        player.on('timeupdate', (data) => {
-            document.getElementById('progress').style.width = (data.percent * 100) + '%';
+        if (player) {
+            player.on('timeupdate', (data) => {
+                const t = data.seconds;
+                const duration = data.duration;
+                
+                if (duration > 0 && progressBar) {
+                    progressBar.style.width = `${(t / duration) * 100}%`;
+                }
+
+                if (isManualNavigating) return;
+
+                const activeIndex = slides.findIndex(s => t >= s.start && t < s.end);
+                
+                if (activeIndex !== -1 && activeIndex !== currentSlideIndex) {
+                    renderSlide(activeIndex);
+                }
+            });
             
-            // Автоматическая смена слайда по таймкоду
-            const activeIndex = slides.findIndex(s => data.seconds >= s.start && data.seconds < s.end);
-            if (activeIndex !== -1 && activeIndex !== currentSlideIndex) {
-                renderSlide(activeIndex);
-            }
+            player.on('ended', () => {
+                 const btn = document.getElementById('start-btn');
+                 if(btn) btn.classList.remove('fade-out');
+                 renderSlide(0);
+            });
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (['ArrowRight', ' ', 'PageDown'].includes(e.key)) navigate(1);
+            if (['ArrowLeft', 'PageUp'].includes(e.key)) navigate(-1);
         });
 
-        window.onload = () => renderSlide(0);
+        window.onload = function() {
+            renderSlide(0);
+        };
     </script>
 </body>
 </html>
