@@ -4,9 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ИИ-трансформация с AISALA AI</title>
+    
+    <!-- Telegram WebApp Script -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Vimeo Player API -->
     <script src="https://player.vimeo.com/api/player.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
@@ -22,28 +32,29 @@
             background-color: #F8FAFC;
             color: #0F172A;
             width: 100vw;
-            height: 100vh;
+            /* FIX: Используем dvh для корректной высоты с учетом интерфейса Telegram */
+            height: 100dvh;
             margin: 0;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Убираем скроллбары */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Анимации слайдов */
+        /* Анимации */
         .slide-enter { 
             opacity: 0; 
             transform: translateY(15px);
-            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
+            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
         }
         .slide-active { 
             opacity: 1; 
             transform: translateY(0);
         }
 
-        /* Анимация исчезновения кнопки старта */
         .fade-out {
-            opacity: 0;
+            opacity: 0 !important;
             pointer-events: none;
             transition: opacity 0.5s ease;
         }
@@ -56,16 +67,16 @@
             width: clamp(140px, 22vw, 280px);
             height: clamp(140px, 22vw, 280px);
             border-radius: 50%;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+            mask-image: radial-gradient(white, black);
             overflow: hidden;
             z-index: 50;
-            /* Убрали border, оставили мягкую тень */
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             background: #000;
             transition: all 0.3s ease;
-            transform: translateZ(0); /* GPU acceleration */
+            transform: translateZ(0);
         }
 
-        /* На мобильных чуть меньше */
         @media (max-width: 768px) {
             #video-container {
                 width: 130px;
@@ -75,7 +86,6 @@
             }
         }
 
-        /* Обертка для зума видео (1.15 = 115% scale) */
         .video-wrapper {
             width: 100%;
             height: 100%;
@@ -94,36 +104,37 @@
             pointer-events: auto;
         }
 
-        /* --- Лейаут --- */
+        /* --- Лейаут Контейнера Слайдов --- */
         #slide-container {
-            height: 100vh;
+            flex: 1;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+            /* FIX: Выровненные отступы для точного центрирования */
+            padding-top: 90px;
+            padding-bottom: 100px;
+            padding-left: clamp(1.5rem, 6vw, 4rem);
+            padding-right: clamp(1.5rem, 6vw, 4rem);
+            
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            /* УВЕЛИЧИЛИ верхний отступ (padding-top), 
-               чтобы заголовки слайдов не залезали на логотип 
-            */
-            padding-top: clamp(6rem, 12vh, 8rem); 
-            padding-bottom: clamp(180px, 20vh, 3rem); 
-            padding-left: clamp(1.5rem, 6vw, 7rem);
-            padding-right: clamp(1.5rem, 6vw, 4rem);
-            overflow: hidden;
-            position: relative;
-            z-index: 10;
+            align-items: center; /* Центрируем слайд внутри контейнера */
         }
 
         @media (min-width: 1024px) {
             #slide-container {
-                width: 70%; /* На десктопе оставляем место справа для видео */
-                padding-bottom: clamp(1rem, 4vh, 3rem);
+                /* На десктопе сдвигаем контент чуть левее, чтобы не перекрывать видео */
+                padding-right: clamp(2rem, 10vw, 8rem); 
+                align-items: flex-start;
+                width: 75%;
             }
         }
 
         .item-card {
             background: white;
             border: 1px solid #F1F5F9;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-            transition: transform 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
         }
         
         /* Прогресс бар */
@@ -138,9 +149,18 @@
         }
         .progress-bar {
             height: 100%;
-            background: #6FEAD1; /* Mint */
+            background: #6FEAD1;
             width: 0%;
             transition: width 0.1s linear;
+        }
+        
+        /* Пульсация для подсказки звука */
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        .animate-pulse-soft {
+            animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
     </style>
 </head>
@@ -151,30 +171,41 @@
         <div id="progress" class="progress-bar"></div>
     </div>
 
-    <!-- Логотип (Кружок) -->
-    <div class="absolute top-6 left-6 md:top-10 md:left-12 z-[40] flex items-center gap-3 pointer-events-none">
-        <!-- Исправлено на circle (rounded-full) -->
+    <!-- Логотип -->
+    <div class="fixed top-6 left-6 md:top-10 md:left-12 z-[40] flex items-center gap-3 pointer-events-none">
         <div class="w-6 h-6 md:w-8 md:h-8 bg-[#6FEAD1] rounded-full shadow-sm flex items-center justify-center"></div>
         <span class="font-black text-xl md:text-2xl tracking-tighter uppercase leading-none text-[#0F172A]">AISALA AI</span>
     </div>
 
-    <!-- Навигация (появляется при наведении или тапе) -->
-    <div class="fixed bottom-8 left-6 z-[45] flex gap-3 md:bottom-12 md:left-12 opacity-80 hover:opacity-100 transition-opacity">
-        <button onclick="navigate(-1)" class="p-4 bg-white rounded-full shadow-lg border border-slate-100 hover:bg-slate-50 transition-colors active:scale-95 group" aria-label="Назад">
+    <!-- Навигация -->
+    <div class="fixed bottom-8 left-6 z-[45] flex gap-3 md:bottom-12 md:left-12 opacity-90">
+        <button onclick="navigate(-1)" class="p-4 bg-white rounded-full shadow-lg border border-slate-100 hover:bg-slate-50 active:scale-95 transition-all group" aria-label="Назад">
             <i data-lucide="arrow-left" class="w-6 h-6 text-slate-700 group-hover:-translate-x-1 transition-transform"></i>
         </button>
-        <button onclick="navigate(1)" class="p-4 bg-white rounded-full shadow-lg border border-slate-100 hover:bg-slate-50 transition-colors active:scale-95 group" aria-label="Вперед">
+        <button onclick="navigate(1)" class="p-4 bg-white rounded-full shadow-lg border border-slate-100 hover:bg-slate-50 active:scale-95 transition-all group" aria-label="Вперед">
             <i data-lucide="arrow-right" class="w-6 h-6 text-slate-700 group-hover:translate-x-1 transition-transform"></i>
         </button>
     </div>
 
     <!-- Видео в кружке -->
     <div id="video-container">
+        <div class="absolute inset-0 z-20 cursor-pointer" onclick="togglePlay()"></div>
+        <!-- Индикатор звука (появляется если замьючено) -->
+        <div id="mute-indicator" class="absolute bottom-4 right-4 z-10 bg-black/50 p-2 rounded-full backdrop-blur-sm pointer-events-none transition-opacity duration-300">
+             <i data-lucide="volume-x" class="w-4 h-4 text-white"></i>
+        </div>
+        
         <div class="video-wrapper">
+            <!-- 
+                FIX: autoplay=1&muted=1 гарантирует автозапуск.
+                playsinline=1 гарантирует работу в кружочке на iOS.
+            -->
             <iframe 
-                src="https://player.vimeo.com/video/1164582477?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;background=1&amp;autoplay=0&amp;loop=0&amp;byline=0&amp;title=0" 
+                src="https://player.vimeo.com/video/1164582477?badge=0&autopause=0&player_id=0&app_id=58479&controls=0&playsinline=1&autoplay=1&muted=1" 
                 frameborder="0" 
-                allow="autoplay; fullscreen; picture-in-picture; clipboard-write" 
+                allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer" 
+                playsinline 
+                webkit-playsinline
                 title="AISALA Presentation"
                 id="vimeo-player">
             </iframe>
@@ -183,35 +214,41 @@
 
     <!-- Контейнер слайдов -->
     <main id="slide-container">
-        <!-- Сюда рендерится контент -->
+        <!-- Контент -->
     </main>
 
     <script>
-        // --- Конфигурация Слайдов и Таймкодов ---
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            try {
+                window.Telegram.WebApp.expand();
+                window.Telegram.WebApp.enableClosingConfirmation();
+                window.Telegram.WebApp.setHeaderColor('#F8FAFC');
+                window.Telegram.WebApp.setBackgroundColor('#F8FAFC');
+            } catch (e) {
+                console.log('TG WebApp init error:', e);
+            }
+        }
+
         const slides = [
             {
-                id: 1,
-                start: 0, end: 5,
+                id: 1, start: 0, end: 5,
                 title: "AISALA AI",
                 subtitle: "AI-трансформация бизнеса",
                 isHero: true,
-                // Поближе к тексту, убраны лишние отступы, убран текст "включите звук"
                 content: `
-                    <div class="flex flex-col items-start gap-0">
-                        <button id="start-btn" onclick="startExperience()" class="group bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold py-4 px-8 md:py-5 md:px-10 rounded-full text-lg md:text-xl transition-all transform hover:scale-105 shadow-[0_10px_25px_-5px_rgba(15,23,42,0.3)] flex items-center gap-4 relative overflow-hidden">
-                            <span class="absolute inset-0 bg-[#6FEAD1] opacity-0 group-hover:opacity-10 transition-opacity"></span>
-                            <div class="bg-[#6FEAD1] text-[#0F172A] p-2 rounded-full">
-                                <i data-lucide="play" class="fill-current w-5 h-5 ml-1"></i>
-                            </div>
-                            <span>Запустить презентацию</span>
-                        </button>
+                    <!-- Кнопка убрана, автостарт видео -->
+                    <div id="sound-hint" class="flex flex-col items-center gap-2 w-full mt-8 animate-pulse-soft transition-opacity duration-500">
+                         <div class="text-slate-400 text-sm md:text-base flex items-center gap-2 bg-white/50 px-4 py-2 rounded-full">
+                            <i data-lucide="volume-2" class="w-4 h-4"></i>
+                            <span>Нажмите на видео для звука</span>
+                         </div>
                     </div>
                 `
             },
             {
-                id: 2,
-                start: 5, end: 18,
-                title: "Мир уже перешёл в AI-First",
+                id: 2, start: 5, end: 18,
+                title: "Мир перешёл в AI-First",
                 subtitle: "Но большинство компаний — нет",
                 content: `
                     <div class="space-y-4">
@@ -230,8 +267,7 @@
                 `
             },
             {
-                id: 3,
-                start: 18, end: 50,
+                id: 3, start: 18, end: 50,
                 title: "Что такое AI-First",
                 subtitle: "Новая парадигма эффективности",
                 content: `
@@ -246,18 +282,16 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                         <div class="p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↓ Издержки</div>
-                         <div class="p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↑ Скорость</div>
-                         <div class="p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↑ Масштаб</div>
-                         <div class="p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↑ Управляемость</div>
+                         <div class="p-2 md:p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↓ Издержки</div>
+                         <div class="p-2 md:p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↑ Скорость</div>
+                         <div class="p-2 md:p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↑ Масштаб</div>
+                         <div class="p-2 md:p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↑ Управляемость</div>
                     </div>
-                    <div class="mt-4 text-[#6FEAD1] font-black uppercase tracking-widest text-sm">Это уже реальность</div>
                 `
             },
             {
-                id: 4,
-                start: 50, end: 68,
-                title: "Почему точечное внедрение не работает",
+                id: 4, start: 50, end: 68,
+                title: "Точечное внедрение не работает",
                 subtitle: "Системная ошибка",
                 items: [
                     { t: "Один AI-инструмент не меняет модель", i: "puzzle" },
@@ -266,10 +300,9 @@
                 ]
             },
             {
-                id: 5,
-                start: 68, end: 78,
+                id: 5, start: 68, end: 78,
                 title: "Шаг 1 — Цели",
-                subtitle: "Влиение на бизнес",
+                subtitle: "Ради влияния на экономику",
                 items: [
                     { t: "Рост прибыли", i: "wallet" },
                     { t: "Скорость процессов", i: "zap" },
@@ -278,8 +311,7 @@
                 ]
             },
             {
-                id: 6,
-                start: 78, end: 96,
+                id: 6, start: 78, end: 96,
                 title: "Диагностика",
                 subtitle: "Аудит и стратегия",
                 items: [
@@ -291,8 +323,7 @@
                 footer: "Быстрые эффекты + долгосрочная трансформация"
             },
             {
-                id: 7,
-                start: 96, end: 111,
+                id: 7, start: 96, end: 111,
                 title: "AI-Платформа",
                 subtitle: "Цифровая ОС компании",
                 items: [
@@ -304,8 +335,7 @@
                 ]
             },
             {
-                id: 8,
-                start: 111, end: 123,
+                id: 8, start: 111, end: 123,
                 title: "Где помогает Айсала",
                 subtitle: "Сферы применения",
                 type: "grid",
@@ -321,10 +351,9 @@
                 ]
             },
             {
-                id: 9,
-                start: 123, end: 142,
+                id: 9, start: 123, end: 142,
                 title: "Айсала - Бизнес-ассистент",
-                subtitle: "Ваша правая рука",
+                subtitle: "Ваш правая рука",
                 items: [
                     { t: "Фиксирую заметки со встреч", i: "mic" },
                     { t: "Формирую задачи", i: "list-todo" },
@@ -334,8 +363,7 @@
                 ]
             },
             {
-                id: 10,
-                start: 142, end: 156,
+                id: 10, start: 142, end: 156,
                 title: "Айсала - HR",
                 subtitle: "Найм и адаптация",
                 items: [
@@ -347,8 +375,7 @@
                 ]
             },
             {
-                id: 11,
-                start: 156, end: 166,
+                id: 11, start: 156, end: 166,
                 title: "Айсала - SMM",
                 subtitle: "Контент-машина",
                 items: [
@@ -360,8 +387,7 @@
                 ]
             },
             {
-                id: 12,
-                start: 166, end: 188,
+                id: 12, start: 166, end: 188,
                 title: "ИИ-трансформация бизнеса",
                 subtitle: "Меняем культуру",
                 items: [
@@ -372,8 +398,7 @@
                 ]
             },
             {
-                id: 13,
-                start: 188, end: 210,
+                id: 13, start: 188, end: 210,
                 title: "Новая роль людей",
                 subtitle: "CEO — Архитектор системы",
                 items: [
@@ -383,8 +408,7 @@
                 ]
             },
             {
-                id: 14,
-                start: 210, end: 218,
+                id: 14, start: 210, end: 218,
                 title: "Форматы работы",
                 subtitle: "Как мы сотрудничаем",
                 items: [
@@ -394,8 +418,7 @@
                 ]
             },
             {
-                id: 15,
-                start: 218, end: 260, // С запасом
+                id: 15, start: 218, end: 260,
                 title: "Предложение",
                 subtitle: "Начните с диагностики",
                 content: `
@@ -416,36 +439,56 @@
             }
         ];
 
-        // --- Логика Приложения ---
         const iframe = document.getElementById('vimeo-player');
-        const player = new Vimeo.Player(iframe);
         const slideContainer = document.getElementById('slide-container');
         const progressBar = document.getElementById('progress');
         
+        let player = null;
+        try {
+            player = new Vimeo.Player(iframe);
+        } catch (err) {
+            console.error('Player init error:', err);
+        }
+
         let currentSlideIndex = -1;
         let isManualNavigating = false;
         
-        // Инициализация иконок сразу
-        lucide.createIcons();
+        // Флаг начального состояния (muted autoplay)
+        let isMutedInitial = true;
+        
+        if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        // Функция запуска презентации с первого слайда
-        function startExperience() {
-            const btn = document.getElementById('start-btn');
+        function togglePlay() {
+            if (!player) return;
             
-            // Запуск видео (браузер разрешит звук, так как это реакция на клик)
-            player.setVolume(1);
-            player.play().then(() => {
-                // Прячем кнопку плавно
-                if(btn) {
-                    btn.classList.add('fade-out');
-                    // Можно удалить её из DOM через 0.5с, но opacity:0 достаточно
+            // Логика первого клика: Включить звук и начать с начала
+            if (isMutedInitial) {
+                player.setVolume(1).then(() => {
+                    player.setCurrentTime(0); // Рестарт, чтобы не пропустить интро
+                    player.play();
+                    isMutedInitial = false;
+                    
+                    // Скрываем индикатор Mute
+                    const ind = document.getElementById('mute-indicator');
+                    if(ind) ind.style.opacity = '0';
+                    
+                    // Скрываем подсказку на слайде
+                    const hint = document.getElementById('sound-hint');
+                    if(hint) hint.style.opacity = '0';
+                }).catch(e => console.error("Unmute err:", e));
+                return;
+            }
+
+            // Стандартный тоггл паузы
+            player.getPaused().then(function(paused) {
+                if (paused) {
+                    player.play().catch(e => console.error("Play Error:", e));
+                } else {
+                    player.pause();
                 }
-            }).catch(error => {
-                console.error('Ошибка воспроизведения:', error);
             });
         }
 
-        // Рендер конкретного слайда
         function renderSlide(index) {
             if (index === currentSlideIndex) return;
             if (index < 0 || index >= slides.length) return;
@@ -453,53 +496,63 @@
             currentSlideIndex = index;
             const slide = slides[index];
 
-            // Определяем отступы в зависимости от типа слайда
-            // Для Hero делаем отступы меньше, чтобы элементы были ближе друг к другу
+            const alignmentClass = slide.isHero ? 'items-center text-center' : 'items-start text-left';
+            const justificationClass = slide.isHero ? 'justify-center' : 'justify-start';
+            
             const titleMargin = slide.isHero ? 'mb-2' : 'mb-3';
             const subtitleMargin = slide.isHero ? 'mb-6' : 'mb-8';
+            
+            // FIX: Убрали whitespace-pre-wrap для Hero, чтобы убрать влияние отступов кода на выравнивание
+            const titleClass = slide.isHero 
+                ? 'text-[clamp(2rem,10vw,4.5rem)] whitespace-normal' 
+                : 'text-[clamp(2rem,6vh,3.5rem)]';
 
-            // Собираем HTML
+            const contentContainerClass = slide.isHero 
+                ? 'w-full flex justify-center' 
+                : 'flex-1 w-full min-h-0 overflow-y-auto hide-scrollbar pr-1';
+
             let html = `
-                <div class="flex flex-col items-start w-full max-w-4xl slide-enter">
-                    <h1 class="font-black uppercase leading-[0.9] tracking-tighter ${titleMargin} text-slate-900 
-                        ${slide.isHero ? 'text-[clamp(3.5rem,10vh,7rem)]' : 'text-[clamp(2.5rem,6vh,4rem)]'}">
-                        ${slide.title}
-                    </h1>
+                <div class="flex flex-col h-full w-full max-w-4xl slide-enter ${alignmentClass} ${justificationClass}">
                     
-                    ${slide.subtitle ? `
-                        <h2 class="font-bold uppercase tracking-tight ${subtitleMargin} text-[#6FEAD1] 
-                        ${slide.isHero ? 'text-[clamp(1.2rem,3vh,2.5rem)]' : 'text-[clamp(1.1rem,2.5vh,1.8rem)]'}">
-                            ${slide.subtitle}
-                        </h2>
-                    ` : ''}
+                    <div class="shrink-0 w-full ${slide.isHero ? 'text-center' : ''}">
+                        <h1 class="font-black uppercase leading-[1.1] tracking-tighter ${titleMargin} text-slate-900 ${titleClass} ${slide.isHero ? 'w-full block' : ''}">
+                            ${slide.title}
+                        </h1>
+                        
+                        ${slide.subtitle ? `
+                            <h2 class="font-bold uppercase tracking-tight ${subtitleMargin} text-[#6FEAD1] 
+                            ${slide.isHero ? 'text-[clamp(1.2rem,3vh,2rem)]' : 'text-[clamp(1rem,2.5vh,1.5rem)]'}">
+                                ${slide.subtitle}
+                            </h2>
+                        ` : ''}
+                    </div>
                     
-                    <div class="w-full space-y-4 pr-2 max-h-[60vh] overflow-y-auto hide-scrollbar">
+                    <div class="${contentContainerClass}">
             `;
 
-            // Логика отображения контента
             if (slide.content) {
                 html += slide.content;
             } 
             else if (slide.type === 'grid') {
-                html += `<div class="grid grid-cols-2 md:grid-cols-4 gap-3">`;
+                html += `<div class="grid grid-cols-2 md:grid-cols-4 gap-3 pb-4">`;
                 slide.items.forEach(item => {
                     html += `
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center gap-2 aspect-[4/3] item-card">
-                            <i data-lucide="${item.i}" class="w-8 h-8 text-[#6FEAD1]"></i>
-                            <span class="font-bold text-slate-700 text-sm uppercase leading-tight">${item.t}</span>
+                        <div class="bg-white p-2 md:p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center gap-2 aspect-[4/3] item-card">
+                            <i data-lucide="${item.i}" class="w-6 h-6 md:w-8 md:h-8 text-[#6FEAD1]"></i>
+                            <span class="font-bold text-slate-700 text-xs md:text-sm uppercase leading-tight">${item.t}</span>
                         </div>`;
                 });
                 html += `</div>`;
             } 
             else if (slide.items) {
-                html += `<div class="grid grid-cols-1 gap-3">`;
+                html += `<div class="grid grid-cols-1 gap-3 pb-4">`;
                 slide.items.forEach(item => {
                     html += `
-                        <div class="flex items-center bg-white rounded-xl shadow-sm border border-slate-100 p-4 gap-5 item-card group hover:border-[#6FEAD1] transition-colors">
-                            <div class="bg-slate-50 p-3 rounded-xl shrink-0 group-hover:bg-[#6FEAD1]/10 transition-colors">
-                                <i data-lucide="${item.i}" class="w-6 h-6 text-[#6FEAD1] group-hover:scale-110 transition-transform"></i>
+                        <div class="flex items-center bg-white rounded-xl shadow-sm border border-slate-100 p-3 md:p-4 gap-4 item-card group hover:border-[#6FEAD1] transition-colors">
+                            <div class="bg-slate-50 p-2 md:p-3 rounded-xl shrink-0 group-hover:bg-[#6FEAD1]/10 transition-colors">
+                                <i data-lucide="${item.i}" class="w-5 h-5 md:w-6 md:h-6 text-[#6FEAD1] group-hover:scale-110 transition-transform"></i>
                             </div>
-                            <span class="font-bold text-slate-700 text-lg md:text-xl leading-tight">${item.t}</span>
+                            <span class="font-bold text-slate-700 text-base md:text-lg leading-tight">${item.t}</span>
                         </div>
                     `;
                 });
@@ -508,69 +561,90 @@
 
             if (slide.footer) {
                 html += `
-                    <div class="mt-6 pt-6 border-t border-slate-200">
-                        <p class="font-bold text-slate-500 uppercase tracking-widest text-sm">${slide.footer}</p>
+                    <div class="mt-6 pt-6 border-t border-slate-200 mb-4">
+                        <p class="font-bold text-slate-500 uppercase tracking-widest text-xs md:text-sm">${slide.footer}</p>
                     </div>
                 `;
             }
 
-            html += `</div></div>`;
+            html += `</div></div>`; 
 
-            // Вставляем и анимируем
             slideContainer.innerHTML = html;
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             
-            // Триггер анимации появления
             const entered = slideContainer.querySelector('.slide-enter');
             requestAnimationFrame(() => {
-                entered.classList.add('slide-active');
+                requestAnimationFrame(() => {
+                    if(entered) entered.classList.add('slide-active');
+                });
             });
         }
 
-        // Навигация
         function navigate(direction) {
             const newIndex = currentSlideIndex + direction;
             if (newIndex >= 0 && newIndex < slides.length) {
                 isManualNavigating = true;
                 
-                // Сразу меняем слайд визуально
                 renderSlide(newIndex);
                 
-                // Перематываем видео
-                const targetTime = slides[newIndex].start;
-                player.setCurrentTime(targetTime).then(() => {
-                    setTimeout(() => { isManualNavigating = false; }, 1000);
-                });
+                // Если ушли с 1-го слайда и звук еще не включен - включаем
+                if (isMutedInitial && direction > 0 && player) {
+                     player.setVolume(1).catch(()=>{});
+                     isMutedInitial = false;
+                     const ind = document.getElementById('mute-indicator');
+                     if(ind) ind.style.opacity = '0';
+                }
+
+                if (newIndex === 0) {
+                    if (player) {
+                        player.pause();
+                        player.setCurrentTime(0);
+                    }
+                    setTimeout(() => { isManualNavigating = false; }, 500);
+                } else if (player) {
+                    const targetTime = slides[newIndex].start;
+                    player.setCurrentTime(targetTime).then(() => {
+                        return player.getPaused();
+                    }).then((paused) => {
+                        if (paused) player.play();
+                    }).catch(e => console.log("Nav play error", e))
+                    .finally(() => {
+                         setTimeout(() => { isManualNavigating = false; }, 1000);
+                    });
+                }
             }
         }
 
-        // Слушатель времени видео
-        player.on('timeupdate', (data) => {
-            const t = data.seconds;
-            const duration = data.duration;
+        if (player) {
+            player.on('timeupdate', (data) => {
+                const t = data.seconds;
+                const duration = data.duration;
+                
+                if (duration > 0 && progressBar) {
+                    progressBar.style.width = `${(t / duration) * 100}%`;
+                }
+
+                if (isManualNavigating) return;
+
+                const activeIndex = slides.findIndex(s => t >= s.start && t < s.end);
+                
+                if (activeIndex !== -1 && activeIndex !== currentSlideIndex) {
+                    renderSlide(activeIndex);
+                }
+            });
             
-            // Обновляем прогресс бар
-            if (duration > 0) {
-                progressBar.style.width = `${(t / duration) * 100}%`;
-            }
+            player.on('ended', () => {
+                 renderSlide(0);
+                 // Сброс состояния для повторного просмотра
+                 isMutedInitial = false; // Звук уже был включен
+            });
+        }
 
-            if (isManualNavigating) return;
-
-            // Ищем актуальный слайд
-            const activeIndex = slides.findIndex(s => t >= s.start && t < s.end);
-            
-            if (activeIndex !== -1 && activeIndex !== currentSlideIndex) {
-                renderSlide(activeIndex);
-            }
-        });
-
-        // Поддержка клавиатуры
         window.addEventListener('keydown', (e) => {
             if (['ArrowRight', ' ', 'PageDown'].includes(e.key)) navigate(1);
             if (['ArrowLeft', 'PageUp'].includes(e.key)) navigate(-1);
         });
 
-        // Рендерим первый слайд сразу при загрузке
         window.onload = function() {
             renderSlide(0);
         };
