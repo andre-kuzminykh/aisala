@@ -1,0 +1,477 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AISALA | Рекрутинговое агентство нового поколения</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Подключаем Framer Motion и Lucide -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            /* Отключаем глобальный пружинящий эффект, оставляем его только внутри контейнера */
+            overscroll-behavior: none; 
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Безопасное извлечение Motion из глобальной области видимости
+        const getMotion = () => {
+            if (window.Motion) return window.Motion;
+            if (window.framerMotion) return window.framerMotion;
+            return null;
+        };
+
+        const { useState, useEffect, useCallback, useRef } = React;
+        const motionLib = getMotion();
+
+        // Если библиотека не загрузилась, создаем заглушки
+        const motion = motionLib ? motionLib.motion : { div: (props) => <div {...props} /> };
+        const AnimatePresence = motionLib ? motionLib.AnimatePresence : ({ children }) => <>{children}</>;
+
+        const SLIDES_COUNT = 6;
+
+        // --- ВСПОМОГАТЕЛЬНЫЙ КОМПОНЕНТ ИКОНОК ---
+        const Icon = ({ name, size = 24, className = "" }) => {
+            const iconRef = useRef(null);
+            useEffect(() => {
+                if (iconRef.current && window.lucide) {
+                    window.lucide.createIcons({
+                        targets: [iconRef.current]
+                    });
+                }
+            }, [name]);
+            return <i ref={iconRef} data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
+
+        // --- КОМПОНЕНТЫ СЛАЙДОВ ---
+
+        const AISALABubble = ({ text, centered = false }) => (
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className={`absolute ${centered ? 'left-1/2 -translate-x-1/2 -bottom-20' : '-right-10 bottom-0'} z-30 hidden md:block`}
+            >
+                <div className="bg-[#0F172A] text-[#6FEAD1] px-6 py-4 rounded-3xl rounded-bl-none shadow-[0_20px_50px_rgba(0,0,0,0.2)] flex items-center gap-3 border border-white/10">
+                    <div className="w-2 h-2 rounded-full bg-[#6FEAD1] animate-pulse" />
+                    <span className="font-mono text-sm font-bold uppercase tracking-tight whitespace-nowrap">{text}</span>
+                </div>
+            </motion.div>
+        );
+
+        const HeroSlide = () => (
+            <div className="grid grid-cols-1 lg:grid-cols-[45%_55%] w-full max-w-7xl items-center gap-8 md:gap-16">
+                <div className="space-y-6 md:space-y-10 text-center lg:text-left">
+                    <div className="space-y-4">
+                        <h1 className="text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter">
+                            AISALA<span className="text-[#6FEAD1]">.</span>
+                        </h1>
+                        <p className="text-lg md:text-2xl font-bold text-slate-400 uppercase tracking-widest">
+                            AI-First Recruiting Agency
+                        </p>
+                    </div>
+                    <div className="space-y-6">
+                        <h2 className="text-3xl md:text-5xl font-bold leading-tight">
+                            Нанимайте AI таланты <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6FEAD1] to-[#4FD1C5]">
+                                в 2 раза быстрее и дешевле
+                            </span>
+                        </h2>
+                        <a 
+                            href="http://t.me/aisala_bot"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block bg-[#6FEAD1] hover:shadow-[0_0_30px_rgba(111,234,209,0.4)] text-[#0F172A] px-10 py-5 rounded-2xl font-black text-lg transition-all active:scale-95"
+                        >
+                            Начать работу с AISALA
+                        </a>
+                    </div>
+                </div>
+                <div className="relative flex justify-center lg:justify-end">
+                    <div className="relative w-[260px] h-[340px] md:w-[450px] md:h-[600px] group">
+                        <div className="absolute -inset-4 bg-[#6FEAD1]/10 rounded-[40px] blur-2xl group-hover:bg-[#6FEAD1]/20 transition-all duration-700" />
+                        <div className="relative w-full h-full bg-slate-200 rounded-[32px] overflow-hidden border border-white shadow-2xl">
+                            <img 
+                                src="https://i.ibb.co/k21mVDFX/image.png" 
+                                alt="AISALA Director" 
+                                className="w-full h-full object-cover grayscale brightness-110"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/60 to-transparent" />
+                        </div>
+                        <AISALABubble text="Привет. Я AISALA. Директор первого AI-агентства." />
+                    </div>
+                </div>
+            </div>
+        );
+
+        const TargetTalentSlide = () => (
+            <div className="max-w-6xl w-full space-y-8 md:space-y-16">
+                <div className="text-center space-y-4">
+                    <h2 className="text-4xl md:text-6xl font-black uppercase">Кого мы нанимаем</h2>
+                    <p className="text-slate-400 text-lg md:text-xl tracking-wide uppercase">Лучшие AI-эксперты для ваших задач</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                    {/* КАРТОЧКА 1: EXECUTIVES */}
+                    <div className="p-6 md:p-8 bg-white rounded-[32px] border border-slate-100 shadow-sm hover:border-[#6FEAD1]/50 transition-all space-y-6 group">
+                        <div className="w-full h-64 rounded-2xl overflow-hidden relative">
+                            <img 
+                                src="https://i.ibb.co/0RhcfsYF/Chat-GPT-Image-Jan-12-2026-01-03-49-AM.png" 
+                                alt="AI Executive" 
+                                className="w-full h-full object-cover object-[center_25%] group-hover:scale-105 transition-transform duration-700"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/80 to-transparent flex items-end p-6">
+                                <p className="text-white/90 font-medium text-sm">Кто сможет возглавить ИИ-трансформацию</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-3xl font-extrabold uppercase tracking-tighter text-[#0F172A] mb-4">
+                                AI&nbsp;&nbsp;Executives
+                            </h3>
+                            <ul className="space-y-3 text-lg font-medium text-slate-500">
+                                <li>• Chief AI Officer (CAIO)</li>
+                                <li>• Head of AI</li>
+                                <li>• AI Director</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    {/* КАРТОЧКА 2: ENGINEERS */}
+                    <div className="p-6 md:p-8 bg-white rounded-[32px] border border-slate-100 shadow-sm hover:border-[#6FEAD1]/50 transition-all space-y-6 group">
+                         <div className="w-full h-64 rounded-2xl overflow-hidden relative">
+                            <img 
+                                src="https://i.ibb.co/NgWK4y0r/Chat-GPT-Image-Jan-12-2026-01-04-22-AM.png" 
+                                alt="AI Engineer" 
+                                className="w-full h-full object-cover object-[center_25%] group-hover:scale-105 transition-transform duration-700"
+                            />
+                             <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/80 to-transparent flex items-end p-6">
+                                <p className="text-white/90 font-medium text-sm">Кто создает решения</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-3xl font-extrabold uppercase tracking-tighter text-[#0F172A] mb-4">
+                                AI&nbsp;&nbsp;Engineers
+                            </h3>
+                            <ul className="space-y-3 text-lg font-medium text-slate-500">
+                                <li>• AI Engineer / ML Ops</li>
+                                <li>• AI Automation Engineer</li>
+                                <li>• AI Product Engineer</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const AdvantagesSlide = () => (
+            <div className="max-w-7xl w-full">
+                <div className="mb-12 md:mb-16">
+                    <h2 className="text-4xl md:text-5xl font-black mb-4 uppercase">Почему AISALA?</h2>
+                    <div className="w-24 h-2 bg-[#6FEAD1]" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                    {[
+                        { title: 'Без предвзятости', desc: 'AI ищет кандидатов и делает первичный скрининг', icon: 'scale' },
+                        { title: 'Оценка эксперта', desc: 'Ведущие эксперты в области AI проводят техническое собеседование с кандидатом', icon: 'brain' },
+                        { title: 'База 50k+ AI-экспертов', desc: 'Самый большой глобальный пул проверенных талантов в моих руках.', icon: 'database' },
+                    ].map((adv, i) => (
+                        <motion.div 
+                            key={i} 
+                            className="bg-white p-8 md:p-12 rounded-[40px] border border-slate-100 shadow-sm flex flex-col gap-6"
+                            whileHover={{ y: -10 }}
+                        >
+                            <div className="text-[#6FEAD1]"><Icon name={adv.icon} size={40} /></div>
+                            <h3 className="text-2xl font-black uppercase tracking-tighter">{adv.title}</h3>
+                            <p className="text-slate-500 leading-relaxed font-medium">{adv.desc}</p>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+        );
+
+        const ProcessSlide = () => (
+            <div className="max-w-6xl w-full">
+                <h2 className="text-4xl md:text-5xl font-black mb-12 md:mb-20 text-center uppercase tracking-tighter">Процесс</h2>
+                <div className="space-y-4 relative max-w-2xl mx-auto">
+                    <div className="absolute left-[23px] top-0 bottom-0 w-px bg-slate-200" />
+                    {[
+                        { icon: 'file-text', title: 'Требования к кандидату', desc: 'Определяем ваши требования к роли.' },
+                        { icon: 'search', title: 'Поиск кандидатов', desc: 'Сканирую 50k+ профилей и баз за секунды.' },
+                        { icon: 'code-2', title: 'Техническое интервью', desc: 'Многоэтапная AI-оценка технических и софт-скиллов.' },
+                        { icon: 'trophy', title: 'Финальные кандидаты', desc: 'Вы встречаетесь с просто с лучшими кандидатами.' },
+                    ].map((p, i) => (
+                        <div key={i} className="flex items-start gap-8 md:gap-10 pl-0">
+                            <div className="w-12 h-12 rounded-full bg-white border-2 border-[#6FEAD1] flex items-center justify-center shrink-0 z-10 text-[#0F172A]">
+                                <Icon name={p.icon} size={20} />
+                            </div>
+                            <div className="pb-8 md:pb-10">
+                                <h3 className="text-xl md:text-2xl font-extrabold uppercase tracking-tight">{p.title}</h3>
+                                <p className="text-slate-500 font-medium text-base md:text-lg">{p.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+
+        const PricingSlide = () => (
+            <div className="max-w-5xl w-full text-center space-y-12">
+                <div className="space-y-4">
+                    <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">Стоимость</h2>
+                    <p className="text-slate-400 font-bold tracking-widest uppercase">Просто · Прозрачно · Фиксированно</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="bg-white p-8 md:p-12 rounded-[48px] border-2 border-slate-50 flex flex-col items-center">
+                        <span className="bg-slate-100 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">Specialist</span>
+                        <h3 className="text-2xl font-black">AI-Specialist Hire</h3>
+                        <div className="text-5xl md:text-6xl font-black my-8 text-[#0F172A]">$4,900</div>
+                        <p className="text-slate-400 font-medium">Engineers · Automation · Product</p>
+                    </div>
+                    <div className="bg-[#0F172A] p-8 md:p-12 rounded-[48px] text-white flex flex-col items-center">
+                        <span className="bg-white/10 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-[#6FEAD1]">Premium</span>
+                        <h3 className="text-2xl font-black">AI-Executive Hire</h3>
+                        <div className="text-5xl md:text-6xl font-black my-8 text-[#6FEAD1]">$9,900</div>
+                        <p className="text-slate-400 font-medium">CAIO · Head of AI · Executives</p>
+                    </div>
+                </div>
+                <p className="font-bold text-slate-400">Фиксированная цена · Без % от зарплаты · Без скрытых комиссий</p>
+            </div>
+        );
+
+        const FinalSlide = () => (
+            <div className="text-center space-y-10 md:space-y-12">
+                <div className="space-y-4">
+                    <h2 className="text-6xl md:text-[120px] font-black leading-none tracking-[-0.05em]">AISALA</h2>
+                    <p className="text-xl md:text-3xl font-bold text-slate-300 uppercase tracking-[0.4em]">AI First Recruiting Agency</p>
+                </div>
+                
+                <div className="space-y-6">
+                    <p className="text-2xl md:text-4xl font-extrabold max-w-3xl mx-auto leading-tight">
+                        Нанимайте AI таланты <br/>
+                        <span className="text-[#6FEAD1]">быстрее · умнее · доступнее</span>
+                    </p>
+                    
+                    <div className="pt-8">
+                        <a 
+                            href="http://t.me/aisala_bot"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex group relative bg-[#0F172A] text-white px-8 md:px-12 py-5 md:py-6 rounded-2xl font-black text-xl md:text-2xl overflow-hidden transition-all hover:scale-105 active:scale-95"
+                        >
+                            <div className="absolute inset-0 bg-[#6FEAD1] translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                            <span className="relative z-10 flex items-center justify-center gap-3 group-hover:text-[#0F172A]">
+                                <Icon name="mail" size={28} /> Связаться с AISALA 
+                            </span>
+                        </a>
+                    </div>
+                </div>
+                
+                <AISALABubble text="Готова к работе, когда и вы." centered />
+            </div>
+        );
+
+        // --- ГЛАВНОЕ ПРИЛОЖЕНИЕ ---
+
+        const SlideWrapper = ({ children }) => {
+            return (
+                <motion.div
+                    id="scroll-container"
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -40 }}
+                    transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                    className="h-full w-full overflow-y-auto hide-scrollbar relative z-10"
+                    style={{ WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}
+                >
+                    <div className="min-h-full w-full flex flex-col justify-center items-center px-6 py-24 md:p-20">
+                        {children}
+                    </div>
+                </motion.div>
+            );
+        };
+
+        const App = () => {
+            const [currentSlide, setCurrentSlide] = useState(0);
+            const [isAnimating, setIsAnimating] = useState(false);
+            const lastScrollTime = useRef(0);
+            const touchStart = useRef(null);
+
+            const goToSlide = useCallback((index) => {
+                if (index >= 0 && index < SLIDES_COUNT && !isAnimating) {
+                    setIsAnimating(true);
+                    setCurrentSlide(index);
+                    setTimeout(() => setIsAnimating(false), 850);
+                }
+            }, [isAnimating]);
+
+            const checkScrollPosition = (direction) => {
+                const container = document.getElementById('scroll-container');
+                if (!container) return true;
+
+                const isScrollable = container.scrollHeight > container.clientHeight;
+                if (!isScrollable) return true;
+
+                // Увеличенный допуск для обработки 'bounce' эффекта на iOS
+                const tolerance = 20; 
+
+                if (direction === 'down') {
+                    // Исправленная проверка: теперь мы проверяем >=, что учитывает ситуацию,
+                    // когда на iOS scrollTop становится больше максимального значения (эффект резинки).
+                    // Это решает проблему, когда Math.abs давал ложно-отрицательный результат при сильном свайпе.
+                    const isAtBottom = (container.scrollTop + container.clientHeight) >= (container.scrollHeight - tolerance);
+                    return isAtBottom;
+                } else if (direction === 'up') {
+                    // Аналогично для верха (scrollTop может быть отрицательным при bounce)
+                    const isAtTop = container.scrollTop <= tolerance;
+                    return isAtTop;
+                }
+                return false;
+            };
+
+            const handleWheel = (e) => {
+                const now = Date.now();
+                if (now - lastScrollTime.current < 1000) return;
+
+                if (Math.abs(e.deltaY) > 30) {
+                    if (e.deltaY > 0) {
+                        if (checkScrollPosition('down')) {
+                            goToSlide(currentSlide + 1);
+                            lastScrollTime.current = now;
+                        }
+                    } else {
+                        if (checkScrollPosition('up')) {
+                            goToSlide(currentSlide - 1);
+                            lastScrollTime.current = now;
+                        }
+                    }
+                }
+            };
+
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (e.key === 'ArrowDown' || e.key === 'PageDown') goToSlide(currentSlide + 1);
+                    if (e.key === 'ArrowUp' || e.key === 'PageUp') goToSlide(currentSlide - 1);
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [currentSlide, goToSlide]);
+
+            const handleTouchStart = (e) => { touchStart.current = e.touches[0].clientY; };
+            const handleTouchEnd = (e) => {
+                if (!touchStart.current) return;
+                const touchEnd = e.changedTouches[0].clientY;
+                const diff = touchStart.current - touchEnd;
+                
+                // Порог свайпа 80px
+                if (Math.abs(diff) > 80) {
+                    if (diff > 0) {
+                        if (checkScrollPosition('down')) {
+                             goToSlide(currentSlide + 1);
+                        }
+                    } else {
+                         if (checkScrollPosition('up')) {
+                            goToSlide(currentSlide - 1);
+                         }
+                    }
+                }
+                touchStart.current = null;
+            };
+
+            const renderSlide = (index) => {
+                switch(index) {
+                    case 0: return <HeroSlide />;
+                    case 1: return <TargetTalentSlide />;
+                    case 2: return <AdvantagesSlide />;
+                    case 3: return <ProcessSlide />;
+                    case 4: return <PricingSlide />;
+                    case 5: return <FinalSlide />;
+                    default: return null;
+                }
+            };
+
+            return (
+                <div 
+                    className="fixed inset-0 overflow-hidden bg-[#F8FAFC] text-[#0F172A] select-none"
+                    onWheel={handleWheel}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                >
+                    {/* Header Logo */}
+                    <div className="fixed top-6 left-6 md:top-8 md:left-8 z-50 flex items-center gap-2">
+                        <div className="w-3 h-3 bg-[#6FEAD1] rounded-full" />
+                        <span className="font-black text-xl tracking-tighter uppercase">AISALA</span>
+                    </div>
+
+                    {/* Navigation Dots */}
+                    <div className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-6">
+                        {[...Array(SLIDES_COUNT)].map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => goToSlide(i)}
+                                className="group relative flex items-center justify-end h-8 w-8 md:w-auto"
+                            >
+                                <span className={`hidden md:block absolute right-6 text-[10px] font-black transition-opacity duration-300 uppercase tracking-[0.2em] ${currentSlide === i ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`}>
+                                    0{i + 1}
+                                </span>
+                                <div className={`w-2 h-2 rounded-full transition-all duration-500 ${
+                                    currentSlide === i ? 'bg-[#6FEAD1] scale-[2.5]' : 'bg-slate-300'
+                                }`} />
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Content Container */}
+                    <main className="relative h-full w-full">
+                        <AnimatePresence mode="wait">
+                            <SlideWrapper key={currentSlide}>
+                                {renderSlide(currentSlide)}
+                            </SlideWrapper>
+                        </AnimatePresence>
+                    </main>
+
+                    {/* Scroll Indicator */}
+                    {currentSlide === 0 && (
+                        <motion.div 
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                            className="fixed bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-300 z-20 pointer-events-none"
+                        >
+                            <p className="text-[10px] uppercase tracking-[0.3em]">Scroll Down</p>
+                            <div className="w-px h-12 bg-gradient-to-b from-slate-300 to-transparent" />
+                        </motion.div>
+                    )}
+                </div>
+            );
+        };
+
+        const container = document.getElementById('root');
+        if (container) {
+            const root = ReactDOM.createRoot(container);
+            root.render(<App />);
+        }
+    </script>
+</body>
+</html>
