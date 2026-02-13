@@ -153,6 +153,15 @@
             width: 0%;
             transition: width 0.1s linear;
         }
+        
+        /* Пульсация для подсказки звука */
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        .animate-pulse-soft {
+            animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
     </style>
 </head>
 <body class="select-none text-slate-800 bg-[#F8FAFC]">
@@ -181,9 +190,18 @@
     <!-- Видео в кружке -->
     <div id="video-container">
         <div class="absolute inset-0 z-20 cursor-pointer" onclick="togglePlay()"></div>
+        <!-- Индикатор звука (появляется если замьючено) -->
+        <div id="mute-indicator" class="absolute bottom-4 right-4 z-10 bg-black/50 p-2 rounded-full backdrop-blur-sm pointer-events-none transition-opacity duration-300">
+             <i data-lucide="volume-x" class="w-4 h-4 text-white"></i>
+        </div>
+        
         <div class="video-wrapper">
+            <!-- 
+                FIX: autoplay=1&muted=1 гарантирует автозапуск.
+                playsinline=1 гарантирует работу в кружочке на iOS.
+            -->
             <iframe 
-                src="https://player.vimeo.com/video/1164582477?badge=0&autopause=0&player_id=0&app_id=58479&controls=0&playsinline=1&autoplay=0&muted=0" 
+                src="https://player.vimeo.com/video/1164582477?badge=0&autopause=0&player_id=0&app_id=58479&controls=0&playsinline=1&autoplay=1&muted=1" 
                 frameborder="0" 
                 allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer" 
                 playsinline 
@@ -219,15 +237,12 @@
                 subtitle: "AI-трансформация бизнеса",
                 isHero: true,
                 content: `
-                    <div class="flex flex-col items-center gap-0 w-full mt-4">
-                        <button id="start-btn" onclick="startExperience()" class="group bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold py-4 px-8 md:py-5 md:px-10 rounded-full text-lg md:text-xl transition-all transform hover:scale-105 shadow-[0_10px_25px_-5px_rgba(15,23,42,0.3)] flex items-center gap-4 relative overflow-hidden active:scale-95">
-                            <span class="absolute inset-0 bg-[#6FEAD1] opacity-0 group-hover:opacity-1 transition-opacity"></span>
-                            <div class="bg-[#6FEAD1] text-[#0F172A] p-2 rounded-full">
-                                <i data-lucide="play" class="fill-current w-5 h-5 ml-1"></i>
-                            </div>
-                            <span class="relative z-10">Запустить презентацию</span>
-                        </button>
-                        <p class="mt-4 text-slate-400 text-sm md:hidden">Нажмите, чтобы включить звук</p>
+                    <!-- Кнопка убрана, автостарт видео -->
+                    <div id="sound-hint" class="flex flex-col items-center gap-2 w-full mt-8 animate-pulse-soft transition-opacity duration-500">
+                         <div class="text-slate-400 text-sm md:text-base flex items-center gap-2 bg-white/50 px-4 py-2 rounded-full">
+                            <i data-lucide="volume-2" class="w-4 h-4"></i>
+                            <span>Нажмите на видео для звука</span>
+                         </div>
                     </div>
                 `
             },
@@ -438,10 +453,33 @@
         let currentSlideIndex = -1;
         let isManualNavigating = false;
         
+        // Флаг начального состояния (muted autoplay)
+        let isMutedInitial = true;
+        
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         function togglePlay() {
             if (!player) return;
+            
+            // Логика первого клика: Включить звук и начать с начала
+            if (isMutedInitial) {
+                player.setVolume(1).then(() => {
+                    player.setCurrentTime(0); // Рестарт, чтобы не пропустить интро
+                    player.play();
+                    isMutedInitial = false;
+                    
+                    // Скрываем индикатор Mute
+                    const ind = document.getElementById('mute-indicator');
+                    if(ind) ind.style.opacity = '0';
+                    
+                    // Скрываем подсказку на слайде
+                    const hint = document.getElementById('sound-hint');
+                    if(hint) hint.style.opacity = '0';
+                }).catch(e => console.error("Unmute err:", e));
+                return;
+            }
+
+            // Стандартный тоггл паузы
             player.getPaused().then(function(paused) {
                 if (paused) {
                     player.play().catch(e => console.error("Play Error:", e));
@@ -449,24 +487,6 @@
                     player.pause();
                 }
             });
-        }
-
-        function startExperience() {
-            const btn = document.getElementById('start-btn');
-            
-            if (player) {
-                player.setVolume(1).then(() => {
-                    return player.play();
-                }).then(() => {
-                    if(btn) btn.classList.add('fade-out');
-                }).catch(error => {
-                    console.error('Ошибка автовоспроизведения:', error);
-                    alert("Нажмите кнопку еще раз для запуска видео.");
-                });
-            } else {
-                if(btn) btn.style.display = 'none';
-                navigate(1);
-            }
         }
 
         function renderSlide(index) {
@@ -567,12 +587,18 @@
                 
                 renderSlide(newIndex);
                 
+                // Если ушли с 1-го слайда и звук еще не включен - включаем
+                if (isMutedInitial && direction > 0 && player) {
+                     player.setVolume(1).catch(()=>{});
+                     isMutedInitial = false;
+                     const ind = document.getElementById('mute-indicator');
+                     if(ind) ind.style.opacity = '0';
+                }
+
                 if (newIndex === 0) {
                     if (player) {
                         player.pause();
                         player.setCurrentTime(0);
-                        const btn = document.getElementById('start-btn');
-                        if(btn) btn.classList.remove('fade-out');
                     }
                     setTimeout(() => { isManualNavigating = false; }, 500);
                 } else if (player) {
@@ -608,9 +634,9 @@
             });
             
             player.on('ended', () => {
-                 const btn = document.getElementById('start-btn');
-                 if(btn) btn.classList.remove('fade-out');
                  renderSlide(0);
+                 // Сброс состояния для повторного просмотра
+                 isMutedInitial = false; // Звук уже был включен
             });
         }
 
