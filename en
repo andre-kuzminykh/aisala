@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Transformation with AISALA AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://player.vimeo.com/api/player.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * { 
+            touch-action: manipulation; 
+            -webkit-tap-highlight-color: transparent; 
+            box-sizing: border-box;
+        } 
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            background-color: #F8FAFC;
+            color: #0F172A;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Hide scrollbars */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Slide Animations */
+        .slide-enter { 
+            opacity: 0; 
+            transform: translateY(15px);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .slide-active { 
+            opacity: 1; 
+            transform: translateY(0);
+        }
+
+        /* Start Button Fade Out Animation */
+        .fade-out {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        /* --- Video Circle Styles --- */
+        #video-container {
+            position: fixed;
+            bottom: clamp(1.5rem, 5vh, 3rem);
+            right: clamp(1.5rem, 5vw, 4rem);
+            width: clamp(140px, 22vw, 280px);
+            height: clamp(140px, 22vw, 280px);
+            border-radius: 50%;
+            overflow: hidden;
+            z-index: 50;
+            /* Removed border, kept soft shadow */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            background: #000;
+            transition: all 0.3s ease;
+            transform: translateZ(0); /* GPU acceleration */
+        }
+
+        /* Slightly smaller on mobile */
+        @media (max-width: 768px) {
+            #video-container {
+                width: 130px;
+                height: 130px;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+
+        /* Video Zoom Wrapper (1.15 = 115% scale) */
+        .video-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform: scale(1.15); 
+            transform-origin: center center;
+            pointer-events: none;
+        }
+        
+        .video-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            object-fit: cover;
+            pointer-events: auto;
+        }
+
+        /* --- Layout --- */
+        #slide-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* Increased padding-top so headers don't overlap logo */
+            padding-top: clamp(6rem, 12vh, 8rem); 
+            padding-bottom: clamp(180px, 20vh, 3rem); 
+            padding-left: clamp(1.5rem, 6vw, 7rem);
+            padding-right: clamp(1.5rem, 6vw, 4rem);
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+        }
+
+        @media (min-width: 1024px) {
+            #slide-container {
+                width: 70%; /* Leave space for video on desktop */
+                padding-bottom: clamp(1rem, 4vh, 3rem);
+            }
+        }
+
+        .item-card {
+            background: white;
+            border: 1px solid #F1F5F9;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s ease;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: #E2E8F0;
+            z-index: 100;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #6FEAD1; /* Mint */
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body class="select-none text-slate-800 bg-[#F8FAFC]">
+
+    <!-- Video Progress -->
+    <div class="progress-container">
+        <div id="progress" class="progress-bar"></div>
+    </div>
+
+    <!-- Logo (Circle) -->
+    <div class="absolute top-6 left-6 md:top-10 md:left-12 z-[40] flex items-center gap-3 pointer-events-none">
+        <div class="w-6 h-6 md:w-8 md:h-8 bg-[#6FEAD1] rounded-full shadow-sm flex items-center justify-center"></div>
+        <span class="font-black text-xl md:text-2xl tracking-tighter uppercase leading-none text-[#0F172A]">AISALA AI</span>
+    </div>
+
+    <!-- Navigation (visible on hover or tap) -->
+    <div class="fixed bottom-8 left-6 z-[45] flex gap-3 md:bottom-12 md:left-12 opacity-80 hover:opacity-100 transition-opacity">
+        <button onclick="navigate(-1)" class="p-4 bg-white rounded-full shadow-lg border border-slate-100 hover:bg-slate-50 transition-colors active:scale-95 group" aria-label="Back">
+            <i data-lucide="arrow-left" class="w-6 h-6 text-slate-700 group-hover:-translate-x-1 transition-transform"></i>
+        </button>
+        <button onclick="navigate(1)" class="p-4 bg-white rounded-full shadow-lg border border-slate-100 hover:bg-slate-50 transition-colors active:scale-95 group" aria-label="Forward">
+            <i data-lucide="arrow-right" class="w-6 h-6 text-slate-700 group-hover:translate-x-1 transition-transform"></i>
+        </button>
+    </div>
+
+    <!-- Video Circle -->
+    <div id="video-container">
+        <!-- Overlay for click (pause/play) -->
+        <div class="absolute inset-0 z-20 cursor-pointer" onclick="togglePlay()"></div>
+        <div class="video-wrapper">
+            <iframe 
+                src="https://player.vimeo.com/video/1164582477?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;background=1&amp;autoplay=0&amp;loop=0&amp;byline=0&amp;title=0" 
+                frameborder="0" 
+                allow="autoplay; fullscreen; picture-in-picture; clipboard-write" 
+                title="AISALA Presentation"
+                id="vimeo-player">
+            </iframe>
+        </div>
+    </div>
+
+    <!-- Slide Container -->
+    <main id="slide-container">
+        <!-- Content rendered here -->
+    </main>
+
+    <script>
+        // --- Slides Configuration & Timecodes ---
+        const slides = [
+            {
+                id: 1,
+                start: 0, end: 5,
+                title: "AISALA AI",
+                subtitle: "AI Transformation of Business",
+                isHero: true,
+                content: `
+                    <div class="flex flex-col items-center gap-0 w-full">
+                        <button id="start-btn" onclick="startExperience()" class="group bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold py-4 px-8 md:py-5 md:px-10 rounded-full text-lg md:text-xl transition-all transform hover:scale-105 shadow-[0_10px_25px_-5px_rgba(15,23,42,0.3)] flex items-center gap-4 relative overflow-hidden">
+                            <span class="absolute inset-0 bg-[#6FEAD1] opacity-0 group-hover:opacity-10 transition-opacity"></span>
+                            <div class="bg-[#6FEAD1] text-[#0F172A] p-2 rounded-full">
+                                <i data-lucide="play" class="fill-current w-5 h-5 ml-1"></i>
+                            </div>
+                            <span>Start Presentation</span>
+                        </button>
+                    </div>
+                `
+            },
+            {
+                id: 2,
+                start: 5, end: 18,
+                title: "The World Has Shifted to AI-First",
+                subtitle: "But Most Companies Have Not",
+                content: `
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4 p-4 rounded-xl bg-red-50 text-red-900 border border-red-100">
+                            <i data-lucide="alert-triangle" class="shrink-0 mt-1"></i>
+                            <div class="font-medium text-lg leading-tight">People are stuck in operations, decisions are slow.</div>
+                        </div>
+                        <div class="flex items-center gap-4 p-4 rounded-xl bg-white shadow-sm border border-slate-200">
+                            <div class="p-2 bg-slate-100 rounded-lg"><i data-lucide="trending-down" class="text-slate-500"></i></div>
+                            <div class="font-bold text-slate-700 text-xl">Scaling = Headcount Growth</div>
+                        </div>
+                        <div class="p-4 text-slate-500 font-medium italic border-l-4 border-slate-300 pl-4">
+                            "Business becomes expensive and uncompetitive"
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 3,
+                start: 18, end: 50,
+                title: "What is AI-First",
+                subtitle: "A New Paradigm of Efficiency",
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                            <div class="text-[#6FEAD1] mb-2"><i data-lucide="bot" class="w-8 h-8"></i></div>
+                            <div class="font-bold text-lg">Processes run by <br>AI Employees</div>
+                        </div>
+                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                            <div class="text-slate-400 mb-2"><i data-lucide="users" class="w-8 h-8"></i></div>
+                            <div class="font-bold text-lg text-slate-600">And humans <br>manage them</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                         <div class="p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↓ Costs</div>
+                         <div class="p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↑ Speed</div>
+                         <div class="p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↑ Scale</div>
+                         <div class="p-3 bg-green-50 text-green-700 rounded-lg text-center font-bold text-sm md:text-base border border-green-100">↑ Control</div>
+                    </div>
+                    <div class="mt-4 text-[#6FEAD1] font-black uppercase tracking-widest text-sm">This is already reality</div>
+                `
+            },
+            {
+                id: 4,
+                start: 50, end: 68,
+                title: "Why Spot Implementation Fails",
+                subtitle: "System Error",
+                items: [
+                    { t: "One AI tool doesn't change the model", i: "puzzle" },
+                    { t: "If AI isn't embedded in processes — no effect", i: "ban" },
+                    { t: "AI must become part of the business DNA", i: "dna" }
+                ]
+            },
+            {
+                id: 5,
+                start: 68, end: 78,
+                title: "Step 1 — Goals",
+                subtitle: "For Economic Impact",
+                items: [
+                    { t: "Profit Growth", i: "wallet" },
+                    { t: "Process Speed", i: "zap" },
+                    { t: "Cost Reduction", i: "arrow-down-circle" },
+                    { t: "Decision Quality", i: "check-circle-2" }
+                ]
+            },
+            {
+                id: 6,
+                start: 78, end: 96,
+                title: "Diagnostics",
+                subtitle: "Audit and Strategy",
+                items: [
+                    { t: "Process Audit", i: "search" },
+                    { t: "AI Maturity Assessment", i: "bar-chart-2" },
+                    { t: "Defining New Roles", i: "user-cog" },
+                    { t: "Implementation Strategy", i: "map" }
+                ],
+                footer: "Quick wins + Long-term transformation"
+            },
+            {
+                id: 7,
+                start: 96, end: 111,
+                title: "AI Platform",
+                subtitle: "Company's Digital OS",
+                items: [
+                    { t: "Neural Network Aggregator", i: "layers" },
+                    { t: "Unlimited Memory", i: "hard-drive" },
+                    { t: "Integration with Your Data", i: "database" },
+                    { t: "Smart Context Management", i: "brain-circuit" },
+                    { t: "Task Automation", i: "settings-2" }
+                ]
+            },
+            {
+                id: 8,
+                start: 111, end: 123,
+                title: "Where AISALA Helps",
+                subtitle: "Areas of Application",
+                type: "grid",
+                items: [
+                    { t: "Management", i: "briefcase" },
+                    { t: "HR", i: "users" },
+                    { t: "Marketing", i: "megaphone" },
+                    { t: "SMM", i: "instagram" },
+                    { t: "Sales", i: "shopping-cart" },
+                    { t: "Support", i: "headphones" },
+                    { t: "Analytics", i: "line-chart" },
+                    { t: "IT Development", i: "code" }
+                ]
+            },
+            {
+                id: 9,
+                start: 123, end: 142,
+                title: "AISALA - Business Assistant",
+                subtitle: "Your Right Hand",
+                items: [
+                    { t: "Capture meeting notes", i: "mic" },
+                    { t: "Create tasks", i: "list-todo" },
+                    { t: "Prepare reports and documents", i: "file-text" },
+                    { t: "Manage calendar", i: "calendar-clock" },
+                    { t: "Consult clients and employees", i: "message-square" }
+                ]
+            },
+            {
+                id: 10,
+                start: 142, end: 156,
+                title: "AISALA - HR",
+                subtitle: "Hiring and Onboarding",
+                items: [
+                    { t: "Create job descriptions", i: "file-plus" },
+                    { t: "Source and interview candidates", i: "user-search" },
+                    { t: "Organize final meetings", i: "calendar-check" },
+                    { t: "Conduct onboarding", i: "rocket" },
+                    { t: "Support and training", i: "graduation-cap" }
+                ]
+            },
+            {
+                id: 11,
+                start: 156, end: 166,
+                title: "AISALA - SMM",
+                subtitle: "Content Machine",
+                items: [
+                    { t: "Prepare content plan", i: "layout-list" },
+                    { t: "Create social media posts", i: "send" },
+                    { t: "Create short videos", i: "video" },
+                    { t: "Handle comments", i: "message-circle" },
+                    { t: "Match your style", i: "palette" }
+                ]
+            },
+            {
+                id: 12,
+                start: 166, end: 188,
+                title: "AI Transformation",
+                subtitle: "Changing Culture",
+                items: [
+                    { t: "Strategic sessions", i: "target" },
+                    { t: "Operating model redesign", i: "refresh-cw" },
+                    { t: "Defining AI and human roles", i: "user-check" },
+                    { t: "Change management", i: "git-fork" }
+                ]
+            },
+            {
+                id: 13,
+                start: 188, end: 210,
+                title: "New Role of Humans",
+                subtitle: "CEO — System Architect",
+                items: [
+                    { t: "Data-driven decision making", i: "bar-chart-big" },
+                    { t: "Managing AI as an asset", i: "gem" },
+                    { t: "Training teams in AI-First model", i: "book-open" }
+                ]
+            },
+            {
+                id: 14,
+                start: 210, end: 218,
+                title: "Working Formats",
+                subtitle: "How We Collaborate",
+                items: [
+                    { t: "Turnkey AI Implementation", i: "key" },
+                    { t: "AI Team Hiring Support", i: "user-plus" },
+                    { t: "Training and Consulting", i: "presentation" }
+                ]
+            },
+            {
+                id: 15,
+                start: 218, end: 260, // Safety buffer
+                title: "Offer",
+                subtitle: "Start with Diagnostics",
+                content: `
+                    <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-[#6FEAD1] opacity-10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+                        <h3 class="text-2xl font-bold mb-6 text-[#6FEAD1]">Free:</h3>
+                        <ul class="space-y-4 mb-8">
+                            <li class="flex items-center gap-3 text-lg"><div class="p-1 bg-[#6FEAD1] rounded-full"><i data-lucide="check" class="w-4 h-4 text-slate-900"></i></div> Process Audit</li>
+                            <li class="flex items-center gap-3 text-lg"><div class="p-1 bg-[#6FEAD1] rounded-full"><i data-lucide="check" class="w-4 h-4 text-slate-900"></i></div> Potential Assessment</li>
+                            <li class="flex items-center gap-3 text-lg"><div class="p-1 bg-[#6FEAD1] rounded-full"><i data-lucide="check" class="w-4 h-4 text-slate-900"></i></div> Personal Strategy</li>
+                        </ul>
+                        <div class="pt-4 border-t border-slate-700">
+                            <p class="text-slate-300">You get clarity.</p>
+                            <p class="font-bold text-xl mt-1">We get a chance to show results.</p>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        // --- Application Logic ---
+        const iframe = document.getElementById('vimeo-player');
+        const player = new Vimeo.Player(iframe);
+        const slideContainer = document.getElementById('slide-container');
+        const progressBar = document.getElementById('progress');
+        
+        let currentSlideIndex = -1;
+        let isManualNavigating = false;
+        
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Toggle Play/Pause on Video Circle Click
+        function togglePlay() {
+            player.getPaused().then(function(paused) {
+                if (paused) {
+                    player.play();
+                } else {
+                    player.pause();
+                }
+            });
+        }
+
+        // Start Presentation
+        function startExperience() {
+            const btn = document.getElementById('start-btn');
+            
+            // Start Video
+            player.setVolume(1);
+            player.play().then(() => {
+                // Fade out button
+                if(btn) {
+                    btn.classList.add('fade-out');
+                }
+            }).catch(error => {
+                console.error('Playback error:', error);
+            });
+        }
+
+        // Render Specific Slide
+        function renderSlide(index) {
+            if (index === currentSlideIndex) return;
+            if (index < 0 || index >= slides.length) return;
+
+            currentSlideIndex = index;
+            const slide = slides[index];
+
+            // Styles for HERO slide
+            const containerClass = slide.isHero ? 'items-center text-center' : 'items-start text-left';
+            const titleMargin = slide.isHero ? 'mb-2' : 'mb-3';
+            const subtitleMargin = slide.isHero ? 'mb-6' : 'mb-8';
+            
+            // Adaptive font size for Hero title
+            const titleClass = slide.isHero 
+                ? 'text-[clamp(2rem,11vw,7rem)] whitespace-nowrap' 
+                : 'text-[clamp(2.5rem,6vh,4rem)]';
+
+            // Build HTML
+            let html = `
+                <div class="flex flex-col ${containerClass} w-full max-w-4xl slide-enter">
+                    <h1 class="font-black uppercase leading-[0.9] tracking-tighter ${titleMargin} text-slate-900 ${titleClass}">
+                        ${slide.title}
+                    </h1>
+                    
+                    ${slide.subtitle ? `
+                        <h2 class="font-bold uppercase tracking-tight ${subtitleMargin} text-[#6FEAD1] 
+                        ${slide.isHero ? 'text-[clamp(1.2rem,3vh,2.5rem)]' : 'text-[clamp(1.1rem,2.5vh,1.8rem)]'}">
+                            ${slide.subtitle}
+                        </h2>
+                    ` : ''}
+                    
+                    <div class="w-full space-y-4 pr-2 max-h-[60vh] overflow-y-auto hide-scrollbar">
+            `;
+
+            // Content Logic
+            if (slide.content) {
+                html += slide.content;
+            } 
+            else if (slide.type === 'grid') {
+                html += `<div class="grid grid-cols-2 md:grid-cols-4 gap-3">`;
+                slide.items.forEach(item => {
+                    html += `
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center gap-2 aspect-[4/3] item-card">
+                            <i data-lucide="${item.i}" class="w-8 h-8 text-[#6FEAD1]"></i>
+                            <span class="font-bold text-slate-700 text-sm uppercase leading-tight">${item.t}</span>
+                        </div>`;
+                });
+                html += `</div>`;
+            } 
+            else if (slide.items) {
+                html += `<div class="grid grid-cols-1 gap-3">`;
+                slide.items.forEach(item => {
+                    html += `
+                        <div class="flex items-center bg-white rounded-xl shadow-sm border border-slate-100 p-4 gap-5 item-card group hover:border-[#6FEAD1] transition-colors">
+                            <div class="bg-slate-50 p-3 rounded-xl shrink-0 group-hover:bg-[#6FEAD1]/10 transition-colors">
+                                <i data-lucide="${item.i}" class="w-6 h-6 text-[#6FEAD1] group-hover:scale-110 transition-transform"></i>
+                            </div>
+                            <span class="font-bold text-slate-700 text-lg md:text-xl leading-tight">${item.t}</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            if (slide.footer) {
+                html += `
+                    <div class="mt-6 pt-6 border-t border-slate-200">
+                        <p class="font-bold text-slate-500 uppercase tracking-widest text-sm">${slide.footer}</p>
+                    </div>
+                `;
+            }
+
+            html += `</div></div>`;
+
+            // Inject and Animate
+            slideContainer.innerHTML = html;
+            lucide.createIcons();
+            
+            // Trigger animation
+            const entered = slideContainer.querySelector('.slide-enter');
+            requestAnimationFrame(() => {
+                entered.classList.add('slide-active');
+            });
+        }
+
+        // Navigation
+        function navigate(direction) {
+            const newIndex = currentSlideIndex + direction;
+            if (newIndex >= 0 && newIndex < slides.length) {
+                isManualNavigating = true;
+                
+                // Switch slide visually
+                renderSlide(newIndex);
+                
+                // If returned to first slide - pause and reset time
+                if (newIndex === 0) {
+                    player.pause();
+                    player.setCurrentTime(0);
+                    setTimeout(() => { isManualNavigating = false; }, 500);
+                } else {
+                    // Seek video
+                    const targetTime = slides[newIndex].start;
+                    player.setCurrentTime(targetTime).then(() => {
+                        setTimeout(() => { isManualNavigating = false; }, 1000);
+                    });
+                    
+                    // Ensure video plays if not on first slide
+                    player.getPaused().then((paused) => {
+                       if(paused) player.play(); 
+                    });
+                }
+            }
+        }
+
+        // Time Update Listener
+        player.on('timeupdate', (data) => {
+            const t = data.seconds;
+            const duration = data.duration;
+            
+            // Update Progress Bar
+            if (duration > 0) {
+                progressBar.style.width = `${(t / duration) * 100}%`;
+            }
+
+            if (isManualNavigating) return;
+
+            // Find Active Slide
+            const activeIndex = slides.findIndex(s => t >= s.start && t < s.end);
+            
+            if (activeIndex !== -1 && activeIndex !== currentSlideIndex) {
+                renderSlide(activeIndex);
+            }
+        });
+
+        // Keyboard Support
+        window.addEventListener('keydown', (e) => {
+            if (['ArrowRight', ' ', 'PageDown'].includes(e.key)) navigate(1);
+            if (['ArrowLeft', 'PageUp'].includes(e.key)) navigate(-1);
+        });
+
+        // Render first slide on load
+        window.onload = function() {
+            renderSlide(0);
+        };
+    </script>
+</body>
+</html>
