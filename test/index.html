@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ИИ-трансформация с AISALA AI</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://player.vimeo.com/api/player.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * { 
+            touch-action: manipulation; 
+            -webkit-tap-highlight-color: transparent; 
+            box-sizing: border-box;
+        } 
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            background-color: #F8FAFC;
+            color: #0F172A;
+            width: 100vw;
+            height: 100dvh;
+            margin: 0;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .slide-enter { 
+            opacity: 0; 
+            transform: translateY(15px);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .slide-active { 
+            opacity: 1; 
+            transform: translateY(0);
+        }
+
+        .fade-out {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        #video-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            overflow: hidden;
+            z-index: 50;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            background: #000;
+            transform: translateZ(0);
+            border: 2px solid white;
+        }
+
+        @media (min-width: 768px) {
+            #video-container {
+                width: 220px;
+                height: 220px;
+                bottom: 40px;
+                right: 40px;
+            }
+        }
+
+        .video-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform: scale(1.6); /* Увеличил зум, чтобы лучше вписать в круг */
+            transform-origin: center center;
+            pointer-events: none;
+        }
+        
+        .video-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            object-fit: cover;
+        }
+
+        #slide-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
+            padding-bottom: 160px; /* Отступ под кружок на мобилках */
+            position: relative;
+            z-index: 10;
+        }
+
+        @media (min-width: 1024px) {
+            #slide-container {
+                width: 60%; 
+                padding-left: 10%;
+                padding-bottom: 2rem;
+            }
+        }
+
+        .item-card {
+            background: white;
+            border: 1px solid #F1F5F9;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #E2E8F0;
+            z-index: 100;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #6FEAD1;
+            width: 0%;
+        }
+    </style>
+</head>
+<body class="select-none text-slate-800">
+
+    <div class="progress-container">
+        <div id="progress" class="progress-bar"></div>
+    </div>
+
+    <div class="absolute top-6 left-6 z-[40] flex items-center gap-3">
+        <div class="w-6 h-6 bg-[#6FEAD1] rounded-full shadow-sm"></div>
+        <span class="font-black text-xl tracking-tighter uppercase text-[#0F172A]">AISALA AI</span>
+    </div>
+
+    <div class="fixed bottom-8 left-6 z-[60] flex gap-3">
+        <button onclick="navigate(-1)" class="p-4 bg-white/90 backdrop-blur rounded-full shadow-xl border border-slate-100 active:scale-90 transition-all">
+            <i data-lucide="arrow-left" class="w-6 h-6 text-slate-700"></i>
+        </button>
+        <button onclick="navigate(1)" class="p-4 bg-white/90 backdrop-blur rounded-full shadow-xl border border-slate-100 active:scale-90 transition-all">
+            <i data-lucide="arrow-right" class="w-6 h-6 text-slate-700"></i>
+        </button>
+    </div>
+
+    <div id="video-container">
+        <div class="absolute inset-0 z-30 cursor-pointer" onclick="togglePlay()"></div>
+        <div class="video-wrapper">
+            <iframe 
+                id="vimeo-player"
+                src="https://player.vimeo.com/video/1164582477?badge=0&autopause=0&player_id=0&app_id=58479&background=1&playsinline=1&muted=1" 
+                frameborder="0" 
+                allow="autoplay; fullscreen; picture-in-picture" 
+                title="AISALA Presentation">
+            </iframe>
+        </div>
+    </div>
+
+    <main id="slide-container"></main>
+
+    <script>
+        // Инициализация Telegram
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+        const slides = [
+            {
+                id: 1, start: 0, end: 5,
+                title: "AISALA AI",
+                subtitle: "AI-трансформация бизнеса",
+                isHero: true,
+                content: `
+                    <div class="mt-8">
+                        <button id="start-btn" onclick="startExperience()" class="bg-[#0F172A] text-white font-bold py-5 px-10 rounded-full text-xl shadow-2xl flex items-center gap-4 active:scale-95 transition-all">
+                            <i data-lucide="play" class="fill-current w-6 h-6"></i>
+                            <span>Смотреть</span>
+                        </button>
+                    </div>
+                `
+            },
+            {
+                id: 2, start: 5, end: 18,
+                title: "Мир перешёл в AI-First",
+                subtitle: "Большинство компаний — нет",
+                items: [
+                    { t: "Решения принимаются медленно", i: "alert-triangle" },
+                    { t: "Масштабирование = рост ФОТ", i: "trending-down" }
+                ]
+            },
+            {
+                id: 3, start: 18, end: 50,
+                title: "Что такое AI-First",
+                subtitle: "Новая парадигма",
+                content: `<div class="p-4 bg-[#6FEAD1]/10 rounded-2xl border border-[#6FEAD1]/20"><p class="text-xl font-bold">Процессы выполняют AI-сотрудники, а люди управляют ими.</p></div>`
+            },
+            {
+                id: 8, start: 111, end: 123,
+                title: "Сферы помощи",
+                subtitle: "Где внедрять?",
+                type: "grid",
+                items: [
+                    { t: "HR", i: "users" },
+                    { t: "Маркетинг", i: "megaphone" },
+                    { t: "Продажи", i: "shopping-cart" },
+                    { t: "IT", i: "code" }
+                ]
+            }
+            // ... другие слайды можно добавить по аналогии
+        ];
+
+        const iframe = document.getElementById('vimeo-player');
+        const player = new Vimeo.Player(iframe);
+        let currentSlideIndex = -1;
+
+        function startExperience() {
+            // Включаем звук и запускаем видео после клика
+            player.setMuted(false);
+            player.play();
+            document.getElementById('start-btn').classList.add('fade-out');
+            setTimeout(() => navigate(1), 500);
+        }
+
+        function togglePlay() {
+            player.getPaused().then(paused => {
+                paused ? player.play() : player.pause();
+            });
+        }
+
+        function renderSlide(index) {
+            if (index === currentSlideIndex || index < 0 || index >= slides.length) return;
+            currentSlideIndex = index;
+            const slide = slides[index];
+
+            let html = `
+                <div class="slide-enter ${slide.isHero ? 'text-center items-center' : ''} flex flex-col gap-4">
+                    <h1 class="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-tight">${slide.title}</h1>
+                    <h2 class="text-xl md:text-2xl font-bold text-[#6FEAD1] uppercase tracking-wide">${slide.subtitle || ''}</h2>
+                    <div class="mt-4 space-y-3">
+            `;
+
+            if (slide.items) {
+                slide.items.forEach(item => {
+                    html += `
+                        <div class="item-card p-4 rounded-xl flex items-center gap-4">
+                            <i data-lucide="${item.i}" class="text-[#6FEAD1]"></i>
+                            <span class="font-bold text-lg">${item.t}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            if (slide.content) html += slide.content;
+            html += `</div></div>`;
+
+            const container = document.getElementById('slide-container');
+            container.innerHTML = html;
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                container.querySelector('.slide-enter').classList.add('slide-active');
+            }, 50);
+        }
+
+        function navigate(dir) {
+            let next = currentSlideIndex + dir;
+            if (next >= 0 && next < slides.length) {
+                renderSlide(next);
+                player.setCurrentTime(slides[next].start);
+            }
+        }
+
+        player.on('timeupdate', (data) => {
+            document.getElementById('progress').style.width = (data.percent * 100) + '%';
+            
+            // Автоматическая смена слайда по таймкоду
+            const activeIndex = slides.findIndex(s => data.seconds >= s.start && data.seconds < s.end);
+            if (activeIndex !== -1 && activeIndex !== currentSlideIndex) {
+                renderSlide(activeIndex);
+            }
+        });
+
+        window.onload = () => renderSlide(0);
+    </script>
+</body>
+</html>
