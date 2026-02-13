@@ -153,7 +153,6 @@
 
     <!-- Логотип (Кружок) -->
     <div class="absolute top-6 left-6 md:top-10 md:left-12 z-[40] flex items-center gap-3 pointer-events-none">
-        <!-- Исправлено на circle (rounded-full) -->
         <div class="w-6 h-6 md:w-8 md:h-8 bg-[#6FEAD1] rounded-full shadow-sm flex items-center justify-center"></div>
         <span class="font-black text-xl md:text-2xl tracking-tighter uppercase leading-none text-[#0F172A]">AISALA AI</span>
     </div>
@@ -170,6 +169,8 @@
 
     <!-- Видео в кружке -->
     <div id="video-container">
+        <!-- Оверлей для клика (пауза/плей) -->
+        <div class="absolute inset-0 z-20 cursor-pointer" onclick="togglePlay()"></div>
         <div class="video-wrapper">
             <iframe 
                 src="https://player.vimeo.com/video/1164582477?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479&amp;background=1&amp;autoplay=0&amp;loop=0&amp;byline=0&amp;title=0" 
@@ -197,7 +198,7 @@
                 isHero: true,
                 // Поближе к тексту, убраны лишние отступы, убран текст "включите звук"
                 content: `
-                    <div class="flex flex-col items-start gap-0">
+                    <div class="flex flex-col items-center gap-0 w-full">
                         <button id="start-btn" onclick="startExperience()" class="group bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold py-4 px-8 md:py-5 md:px-10 rounded-full text-lg md:text-xl transition-all transform hover:scale-105 shadow-[0_10px_25px_-5px_rgba(15,23,42,0.3)] flex items-center gap-4 relative overflow-hidden">
                             <span class="absolute inset-0 bg-[#6FEAD1] opacity-0 group-hover:opacity-10 transition-opacity"></span>
                             <div class="bg-[#6FEAD1] text-[#0F172A] p-2 rounded-full">
@@ -269,7 +270,7 @@
                 id: 5,
                 start: 68, end: 78,
                 title: "Шаг 1 — Цели",
-                subtitle: "Влиение на бизнес",
+                subtitle: "Ради влияния на экономику",
                 items: [
                     { t: "Рост прибыли", i: "wallet" },
                     { t: "Скорость процессов", i: "zap" },
@@ -324,7 +325,7 @@
                 id: 9,
                 start: 123, end: 142,
                 title: "Айсала - Бизнес-ассистент",
-                subtitle: "Ваша правая рука",
+                subtitle: "Ваш правая рука",
                 items: [
                     { t: "Фиксирую заметки со встреч", i: "mic" },
                     { t: "Формирую задачи", i: "list-todo" },
@@ -428,17 +429,27 @@
         // Инициализация иконок сразу
         lucide.createIcons();
 
+        // Функция переключения паузы/воспроизведения (по клику на круг)
+        function togglePlay() {
+            player.getPaused().then(function(paused) {
+                if (paused) {
+                    player.play();
+                } else {
+                    player.pause();
+                }
+            });
+        }
+
         // Функция запуска презентации с первого слайда
         function startExperience() {
             const btn = document.getElementById('start-btn');
             
-            // Запуск видео (браузер разрешит звук, так как это реакция на клик)
+            // Запуск видео
             player.setVolume(1);
             player.play().then(() => {
                 // Прячем кнопку плавно
                 if(btn) {
                     btn.classList.add('fade-out');
-                    // Можно удалить её из DOM через 0.5с, но opacity:0 достаточно
                 }
             }).catch(error => {
                 console.error('Ошибка воспроизведения:', error);
@@ -453,16 +464,22 @@
             currentSlideIndex = index;
             const slide = slides[index];
 
-            // Определяем отступы в зависимости от типа слайда
-            // Для Hero делаем отступы меньше, чтобы элементы были ближе друг к другу
+            // Настройка стилей для HERO слайда (центрирование и размер шрифта)
+            // Добавили items-center text-center и whitespace-nowrap для заголовка
+            const containerClass = slide.isHero ? 'items-center text-center' : 'items-start text-left';
             const titleMargin = slide.isHero ? 'mb-2' : 'mb-3';
             const subtitleMargin = slide.isHero ? 'mb-6' : 'mb-8';
+            
+            // Адаптивный размер шрифта для заголовка Hero, чтобы влезал в одну строку на мобилках
+            // Используем vw для масштабирования от ширины экрана
+            const titleClass = slide.isHero 
+                ? 'text-[clamp(2rem,11vw,7rem)] whitespace-nowrap' 
+                : 'text-[clamp(2.5rem,6vh,4rem)]';
 
             // Собираем HTML
             let html = `
-                <div class="flex flex-col items-start w-full max-w-4xl slide-enter">
-                    <h1 class="font-black uppercase leading-[0.9] tracking-tighter ${titleMargin} text-slate-900 
-                        ${slide.isHero ? 'text-[clamp(3.5rem,10vh,7rem)]' : 'text-[clamp(2.5rem,6vh,4rem)]'}">
+                <div class="flex flex-col ${containerClass} w-full max-w-4xl slide-enter">
+                    <h1 class="font-black uppercase leading-[0.9] tracking-tighter ${titleMargin} text-slate-900 ${titleClass}">
                         ${slide.title}
                     </h1>
                     
@@ -536,11 +553,23 @@
                 // Сразу меняем слайд визуально
                 renderSlide(newIndex);
                 
-                // Перематываем видео
-                const targetTime = slides[newIndex].start;
-                player.setCurrentTime(targetTime).then(() => {
-                    setTimeout(() => { isManualNavigating = false; }, 1000);
-                });
+                // Если вернулись на первый слайд - ставим на паузу и сбрасываем время
+                if (newIndex === 0) {
+                    player.pause();
+                    player.setCurrentTime(0);
+                    setTimeout(() => { isManualNavigating = false; }, 500);
+                } else {
+                    // Перематываем видео
+                    const targetTime = slides[newIndex].start;
+                    player.setCurrentTime(targetTime).then(() => {
+                        setTimeout(() => { isManualNavigating = false; }, 1000);
+                    });
+                    
+                    // Убеждаемся, что видео играет, если перешли не на первый слайд
+                    player.getPaused().then((paused) => {
+                       if(paused) player.play(); 
+                    });
+                }
             }
         }
 
