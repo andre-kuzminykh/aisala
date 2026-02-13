@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ИИ-трансформация с AISALA AI</title>
+    <!-- FIX: Добавлен скрипт Telegram WebApp для корректной работы внутри мессенджера -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://player.vimeo.com/api/player.js"></script>
@@ -23,6 +25,8 @@
             color: #0F172A;
             width: 100vw;
             height: 100vh;
+            /* FIX: Используем dvh для корректной высоты на мобильных в Telegram */
+            height: 100dvh;
             margin: 0;
         }
 
@@ -58,7 +62,6 @@
             border-radius: 50%;
             overflow: hidden;
             z-index: 50;
-            /* Убрали border, оставили мягкую тень */
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             background: #000;
             transition: all 0.3s ease;
@@ -96,13 +99,10 @@
 
         /* --- Лейаут --- */
         #slide-container {
-            height: 100vh;
+            height: 100%; /* Fix: используем 100% от родителя (body) */
             display: flex;
             flex-direction: column;
             justify-content: center;
-            /* УВЕЛИЧИЛИ верхний отступ (padding-top), 
-               чтобы заголовки слайдов не залезали на логотип 
-            */
             padding-top: clamp(6rem, 12vh, 8rem); 
             padding-bottom: clamp(180px, 20vh, 3rem); 
             padding-left: clamp(1.5rem, 6vw, 7rem);
@@ -114,7 +114,7 @@
 
         @media (min-width: 1024px) {
             #slide-container {
-                width: 70%; /* На десктопе оставляем место справа для видео */
+                width: 70%; 
                 padding-bottom: clamp(1rem, 4vh, 3rem);
             }
         }
@@ -157,7 +157,7 @@
         <span class="font-black text-xl md:text-2xl tracking-tighter uppercase leading-none text-[#0F172A]">AISALA AI</span>
     </div>
 
-    <!-- Навигация (появляется при наведении или тапе) -->
+    <!-- Навигация -->
     <div class="fixed bottom-8 left-6 z-[45] flex gap-3 md:bottom-12 md:left-12 opacity-80 hover:opacity-100 transition-opacity">
         <button onclick="navigate(-1)" class="p-4 bg-white rounded-full shadow-lg border border-slate-100 hover:bg-slate-50 transition-colors active:scale-95 group" aria-label="Назад">
             <i data-lucide="arrow-left" class="w-6 h-6 text-slate-700 group-hover:-translate-x-1 transition-transform"></i>
@@ -188,6 +188,17 @@
     </main>
 
     <script>
+        // FIX: Инициализация Telegram Web App
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            try {
+                window.Telegram.WebApp.expand(); // Раскрываем на всю высоту
+                window.Telegram.WebApp.enableClosingConfirmation();
+            } catch (e) {
+                console.log('TG WebApp init warning', e);
+            }
+        }
+
         // --- Конфигурация Слайдов и Таймкодов ---
         const slides = [
             {
@@ -196,11 +207,10 @@
                 title: "AISALA AI",
                 subtitle: "AI-трансформация бизнеса",
                 isHero: true,
-                // Поближе к тексту, убраны лишние отступы, убран текст "включите звук"
                 content: `
                     <div class="flex flex-col items-center gap-0 w-full">
                         <button id="start-btn" onclick="startExperience()" class="group bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold py-4 px-8 md:py-5 md:px-10 rounded-full text-lg md:text-xl transition-all transform hover:scale-105 shadow-[0_10px_25px_-5px_rgba(15,23,42,0.3)] flex items-center gap-4 relative overflow-hidden">
-                            <span class="absolute inset-0 bg-[#6FEAD1] opacity-0 group-hover:opacity-10 transition-opacity"></span>
+                            <span class="absolute inset-0 bg-[#6FEAD1] opacity-0 group-hover:opacity-1 transition-opacity"></span>
                             <div class="bg-[#6FEAD1] text-[#0F172A] p-2 rounded-full">
                                 <i data-lucide="play" class="fill-current w-5 h-5 ml-1"></i>
                             </div>
@@ -396,7 +406,7 @@
             },
             {
                 id: 15,
-                start: 218, end: 260, // С запасом
+                start: 218, end: 260,
                 title: "Предложение",
                 subtitle: "Начните с диагностики",
                 content: `
@@ -419,41 +429,54 @@
 
         // --- Логика Приложения ---
         const iframe = document.getElementById('vimeo-player');
-        const player = new Vimeo.Player(iframe);
         const slideContainer = document.getElementById('slide-container');
         const progressBar = document.getElementById('progress');
         
+        let player = null;
+        try {
+            player = new Vimeo.Player(iframe);
+        } catch (err) {
+            console.error('Ошибка инициализации плеера:', err);
+        }
+
         let currentSlideIndex = -1;
         let isManualNavigating = false;
         
-        // Инициализация иконок сразу
-        lucide.createIcons();
+        // Инициализация иконок сразу (безопасный вызов)
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
 
-        // Функция переключения паузы/воспроизведения (по клику на круг)
+        // Функция переключения паузы/воспроизведения
         function togglePlay() {
+            if (!player) return;
             player.getPaused().then(function(paused) {
                 if (paused) {
                     player.play();
                 } else {
                     player.pause();
                 }
-            });
+            }).catch(e => console.log(e));
         }
 
-        // Функция запуска презентации с первого слайда
+        // Функция запуска презентации
         function startExperience() {
             const btn = document.getElementById('start-btn');
             
-            // Запуск видео
-            player.setVolume(1);
-            player.play().then(() => {
-                // Прячем кнопку плавно
-                if(btn) {
-                    btn.classList.add('fade-out');
-                }
-            }).catch(error => {
-                console.error('Ошибка воспроизведения:', error);
-            });
+            if (player) {
+                player.setVolume(1).catch(e => console.log('Volume error', e));
+                player.play().then(() => {
+                    if(btn) btn.classList.add('fade-out');
+                }).catch(error => {
+                    console.error('Ошибка воспроизведения:', error);
+                    // Если автоплей заблокирован, пробуем показать UI все равно
+                    if(btn) btn.style.display = 'none';
+                });
+            } else {
+                // Фоллбек, если плеер сломан
+                if(btn) btn.style.display = 'none';
+                navigate(1);
+            }
         }
 
         // Рендер конкретного слайда
@@ -464,19 +487,14 @@
             currentSlideIndex = index;
             const slide = slides[index];
 
-            // Настройка стилей для HERO слайда (центрирование и размер шрифта)
-            // Добавили items-center text-center и whitespace-nowrap для заголовка
             const containerClass = slide.isHero ? 'items-center text-center' : 'items-start text-left';
             const titleMargin = slide.isHero ? 'mb-2' : 'mb-3';
             const subtitleMargin = slide.isHero ? 'mb-6' : 'mb-8';
             
-            // Адаптивный размер шрифта для заголовка Hero, чтобы влезал в одну строку на мобилках
-            // Используем vw для масштабирования от ширины экрана
             const titleClass = slide.isHero 
                 ? 'text-[clamp(2rem,11vw,7rem)] whitespace-nowrap' 
                 : 'text-[clamp(2.5rem,6vh,4rem)]';
 
-            // Собираем HTML
             let html = `
                 <div class="flex flex-col ${containerClass} w-full max-w-4xl slide-enter">
                     <h1 class="font-black uppercase leading-[0.9] tracking-tighter ${titleMargin} text-slate-900 ${titleClass}">
@@ -493,7 +511,6 @@
                     <div class="w-full space-y-4 pr-2 max-h-[60vh] overflow-y-auto hide-scrollbar">
             `;
 
-            // Логика отображения контента
             if (slide.content) {
                 html += slide.content;
             } 
@@ -533,14 +550,12 @@
 
             html += `</div></div>`;
 
-            // Вставляем и анимируем
             slideContainer.innerHTML = html;
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             
-            // Триггер анимации появления
             const entered = slideContainer.querySelector('.slide-enter');
             requestAnimationFrame(() => {
-                entered.classList.add('slide-active');
+                if(entered) entered.classList.add('slide-active');
             });
         }
 
@@ -550,56 +565,56 @@
             if (newIndex >= 0 && newIndex < slides.length) {
                 isManualNavigating = true;
                 
-                // Сразу меняем слайд визуально
                 renderSlide(newIndex);
                 
-                // Если вернулись на первый слайд - ставим на паузу и сбрасываем время
                 if (newIndex === 0) {
-                    player.pause();
-                    player.setCurrentTime(0);
+                    if (player) {
+                        player.pause();
+                        player.setCurrentTime(0);
+                    }
                     setTimeout(() => { isManualNavigating = false; }, 500);
-                } else {
-                    // Перематываем видео
+                } else if (player) {
                     const targetTime = slides[newIndex].start;
                     player.setCurrentTime(targetTime).then(() => {
                         setTimeout(() => { isManualNavigating = false; }, 1000);
+                    }).catch(() => {
+                         // Игнорируем ошибки времени
+                         setTimeout(() => { isManualNavigating = false; }, 1000);
                     });
                     
-                    // Убеждаемся, что видео играет, если перешли не на первый слайд
                     player.getPaused().then((paused) => {
-                       if(paused) player.play(); 
+                       if(paused) player.play().catch(()=>{}); 
                     });
                 }
             }
         }
 
         // Слушатель времени видео
-        player.on('timeupdate', (data) => {
-            const t = data.seconds;
-            const duration = data.duration;
-            
-            // Обновляем прогресс бар
-            if (duration > 0) {
-                progressBar.style.width = `${(t / duration) * 100}%`;
-            }
+        if (player) {
+            player.on('timeupdate', (data) => {
+                const t = data.seconds;
+                const duration = data.duration;
+                
+                if (duration > 0 && progressBar) {
+                    progressBar.style.width = `${(t / duration) * 100}%`;
+                }
 
-            if (isManualNavigating) return;
+                if (isManualNavigating) return;
 
-            // Ищем актуальный слайд
-            const activeIndex = slides.findIndex(s => t >= s.start && t < s.end);
-            
-            if (activeIndex !== -1 && activeIndex !== currentSlideIndex) {
-                renderSlide(activeIndex);
-            }
-        });
+                const activeIndex = slides.findIndex(s => t >= s.start && t < s.end);
+                
+                if (activeIndex !== -1 && activeIndex !== currentSlideIndex) {
+                    renderSlide(activeIndex);
+                }
+            });
+        }
 
-        // Поддержка клавиатуры
         window.addEventListener('keydown', (e) => {
             if (['ArrowRight', ' ', 'PageDown'].includes(e.key)) navigate(1);
             if (['ArrowLeft', 'PageUp'].includes(e.key)) navigate(-1);
         });
 
-        // Рендерим первый слайд сразу при загрузке
+        // Безопасный старт
         window.onload = function() {
             renderSlide(0);
         };
